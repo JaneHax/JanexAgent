@@ -1,5 +1,5 @@
 {
-    "name":  "janex",
+  "name": "@janex/janex",
     "version":  "1.0.0",
     "type":  "module",
     "description":  "Autonomous Multi-Agent AI Workspace in your terminal. Codes, researches, and executes real tasks with 40+ tools and 280+ skills",

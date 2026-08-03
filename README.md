@@ -51,7 +51,7 @@ Janex > BTC is currently trading at $XX,XXX...
 ## Installation
 
 ```bash
-npm install -g janex
+npm install -g @janex/janex
 ```
 
 ### Verify
