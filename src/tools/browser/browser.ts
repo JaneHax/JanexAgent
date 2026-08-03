@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { chromium } from 'playwright';
+import { chromium } from 'playwright-core';
 import path from 'path';
 import os from 'os';
 
