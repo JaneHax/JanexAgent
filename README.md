@@ -81,11 +81,11 @@ Config is stored in `~/.janex/config.yaml` by default.
 
 ### Environment variables
 
-| Variable | Default | Description |
-|---|---|---|
-| `SUPABASE_MAIL_BASE` | *(required for mail gateway)* | Supabase temp-mail API URL |
-| `MAIL_DOMAIN` | `jane.web.id` | Mail domain for gateway mail tools |
-| `PORT` | `4000` | Port for local HTTP server / health endpoint |
+| Variable | Description |
+|---|---|
+| `OPENAI_API_KEY` | OpenAI-compatible API key (or use `janex setup`) |
+| `OPENAI_BASE_URL` | Custom base URL for OpenAI-compatible endpoints |
+| `ANTHROPIC_API_KEY` | Anthropic API key (for `anthropic` provider) |
 
 Use `.env` in the project root for local development:
 
