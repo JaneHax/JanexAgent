@@ -1,4 +1,4 @@
-# Janex
+# JANEX AGENT
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm](https://img.shields.io/badge/npm-janex--agent-blue?logo=npm&logoColor=white)](https://www.npmjs.com/package/janex-agent)
