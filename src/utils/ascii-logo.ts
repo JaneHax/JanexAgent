@@ -1,4 +1,4 @@
-// janex ANSI logo — braille phoenix art
+// janex ANSI logo — block text art
 // Left half: warm teal (#fab283 palette) | Right half: ocean blue (#2980b9 palette)
 // logoLines() strips ANSI for OpenTUI React; asciiLogo() keeps colors
 
@@ -61,15 +61,15 @@ function splitColor(line: string): string {
 }
 
 const ART_LINES: string[] = [
-  '⡀⡀⡀⡀⣀⣀⡀⡀⡀⡀⡀⡀⣀⣀⡀⡀⡀⡀⡀⡀⣀⣀⡀⡀⡀⣀⣀⣀⣀⣀⣀⡀⡀⡀⡀⡀⣀⣀⡀⡀⡀⣀⡀⡀⡀⡀⡀⡀⣀⣀',
-  '⡀⡀⡀⡀⣾⡿⣿⡀⡀⡀⡀⡀⢸⣿⡀⡀⡀⡀⡀⡀⢸⣿⡀⡀⡀⣿⣿⠛⠛⠛⠛⢿⣿⡄⡀⡀⢸⣿⡀⡀⡀⠹⣿⡄⡀⡀⡀⣼⣿⡀',
-  '⡀⡀⡀⣠⣿⡀⣿⣇⡀⡀⡀⡀⢸⣿⡀⡀⡀⡀⡀⡀⢸⣿⡀⡀⡀⣿⣿⡀⡀⡀⡀⡀⣿⣿⡀⡀⢸⣿⡀⡀⡀⡀⠹⣿⡀⡀⣰⣿⠁⡀',
-  '⡀⡀⡀⣿⡏⡀⠸⣿⡀⡀⡀⡀⢸⣿⡀⡀⡀⡀⡀⡀⢸⣿⡀⡀⡀⣿⣿⡀⡀⡀⡀⡀⣿⡿⡀⡀⢸⣿⡀⡀⡀⡀⡀⢻⣿⣠⣿⠁⡀⡀',
-  '⡀⡀⣸⣿⡀⡀⡀⣿⣧⡀⡀⡀⢸⣿⡀⡀⡀⡀⡀⡀⢸⣿⡀⡀⡀⣿⣿⣶⣶⣶⣶⣿⠟⡀⡀⡀⢸⣿⡀⡀⡀⡀⡀⡀⣿⣿⡃⡀⡀⡀',
-  '⡀⡀⣿⣷⣶⣶⣶⣾⣿⡀⡀⡀⢸⣿⡀⡀⡀⡀⡀⡀⣼⣿⡀⡀⡀⣿⣿⡀⡀⠙⣿⣄⡀⡀⡀⡀⢸⣿⡀⡀⡀⡀⡀⣼⡿⠹⣿⡀⡀⡀',
-  '⡀⣼⣿⡀⡀⡀⡀⡀⣿⣷⡀⡀⡀⣿⡆⡀⡀⡀⡀⡀⣿⡿⡀⡀⡀⣿⣿⡀⡀⡀⠹⣿⡄⡀⡀⡀⢸⣿⡀⡀⡀⡀⣼⣿⡀⡀⠹⣿⡀⡀',
-  '⣀⣿⠇⡀⡀⡀⡀⡀⠘⣿⡄⡀⡀⠻⣿⣦⣀⣀⣠⣾⣿⠁⡀⡀⡀⣿⣿⡀⡀⡀⡀⠹⣿⡄⡀⡀⢸⣿⡀⡀⡀⣴⣿⠁⡀⡀⡀⢻⣿⡀',
-  '⠚⠛⡀⡀⡀⡀⡀⡀⡀⠛⠛⡀⡀⡀⠈⠛⠻⠿⠛⠋⡀⡀⡀⡀⡀⠛⠛⡀⡀⡀⡀⡀⠙⠛⡀⡀⠘⠛⡀⡀⠐⠛⠁⡀⡀⡀⡀⡀⠛⠛',
+'⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀',
+'⡀⡀⡀⣤⡀⡀⡀⡀⡀⣴⡀⡀⡀⡀⡀⣤⣤⡀⡀⡀⡀⢠⣤⡀⡀⣤⣤⣤⣤⣤⣤⡀⢠⣤⡀⡀⡀⡀⡀⣤⠄',
+'⡀⡀⡀⣿⡀⡀⡀⡀⢰⡏⣿⡀⡀⡀⡀⣿⠹⣧⡀⡀⡀⢸⣿⡀⡀⣿⡀⡀⡀⡀⡀⡀⡀⠻⣷⡀⡀⢀⣿⠋⡀',
+'⡀⡀⡀⣿⡀⡀⡀⡀⣿⡀⢹⣇⡀⡀⡀⣿⡀⠹⣷⡀⡀⢸⣿⡀⡀⣿⡀⡀⡀⡀⡀⡀⡀⡀⠙⣷⢀⣿⠁⡀⡀',
+'⡀⡀⡀⣿⡀⡀⡀⣼⠃⡀⡀⣿⡀⡀⡀⣿⡀⡀⠙⣷⡀⢸⣿⡀⡀⣿⠛⠛⠛⠛⠃⡀⡀⡀⡀⣸⣿⡄⡀⡀⡀',
+'⡀⡀⡀⣿⡀⡀⢠⡿⠛⠛⠛⠛⣷⡀⡀⣿⡀⡀⡀⠘⣿⢸⣿⡀⡀⣿⡀⡀⡀⡀⡀⡀⡀⡀⣼⠟⡀⢿⣄⡀⡀',
+'⢀⣀⣠⣿⡀⡀⣿⠁⡀⡀⡀⡀⢿⡆⡀⣿⡀⡀⡀⡀⠈⣿⣿⡀⡀⣿⣀⣀⣀⣀⣀⡀⡀⣾⠏⡀⡀⡀⢿⣦⡀',
+'⡀⠉⠉⡀⡀⠈⠉⡀⡀⡀⡀⡀⠈⠉⡀⠉⡀⡀⡀⡀⡀⡀⠁⡀⡀⠉⠉⠉⠉⠉⠉⡀⠉⠉⡀⡀⡀⡀⡀⠉⠁',
+'⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀⡀',
 ];
 
 // Colored version for stdout / LiteApp
@@ -87,7 +87,7 @@ export function logoLines(): string[] {
 }
 
 export function janexLogoMark(): string {
-  return '\x1b[38;2;250;178;131m▟▛▜▞\x1b[0m \x1b[38;2;100;169;180mA U R I X\x1b[0m';
+  return '\x1b[38;2;250;178;131m▟▛▜▞\x1b[0m \x1b[38;2;100;169;180mJ A N E X\x1b[0m';
 }
 
 export function wordmark(): string {
@@ -99,7 +99,7 @@ export function compactLogo(): string {
 }
 
 export function logoSymbol(): [string, string][] {
-  return [['#fab283', 'teal + warm peach phoenix pixel mark']];
+  return [['#fab283', 'cyan + orange JANEX block text mark']];
 }
 
 export function miniLogo(): string {
@@ -119,4 +119,7 @@ export function banner(model: string, provider: string, version: string = '0.1.0
     version
   );
 }
+
+
+
 

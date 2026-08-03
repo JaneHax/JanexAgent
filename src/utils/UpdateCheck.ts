@@ -5,7 +5,7 @@ import https from 'https';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PKG_NAME = 'janex-ai';
+const PKG_NAME = 'janex-agent';
 
 function readCurrentVersion(): string {
   // Preferred: launcher (bin/janex.js) injects this at startup.
@@ -104,8 +104,8 @@ export async function checkForUpdate(): Promise<void> {
 
   // Box-drawing the banner to match janex's setup UI style.
   const lines = [
-    `\x1b[38;2;250;178;131mA new version of ${PKG_NAME} is available: \x1b[1m${CURRENT_VERSION}\x1b[22m → \x1b[38;2;127;216;143;1m${latest}\x1b[0m\x1b[38;2;250;178;131m`,
-    `Run \x1b[38;2;157;124;216;1mnpm i -g ${PKG_NAME}@latest\x1b[22m to update.\x1b[0m`,
+    `\x1b[38;2;250;178;131mA new version of ${PKG_NAME} is available: \x1b[1m${CURRENT_VERSION}\x1b[22m → \x1b[38;2;100;255;218;1m${latest}\x1b[0m\x1b[38;2;250;178;131m`,
+    `Run \x1b[38;2;86;182;194;1mnpm i -g ${PKG_NAME}@latest\x1b[22m to update.\x1b[0m`,
   ];
   const width = Math.max(...lines.map(l => l.replace(/\x1b\[[0-9;]*m/g, '').length)) + 2;
   const border = '\x1b[38;2;72;72;72m';
@@ -118,4 +118,7 @@ export async function checkForUpdate(): Promise<void> {
   console.log(`${border}╰${'─'.repeat(width)}╯\x1b[0m`);
   console.log();
 }
+
+
+
 
