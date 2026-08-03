@@ -1,6 +1,6 @@
 {
   "name": "janex-agent",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "type": "module",
   "description": "Autonomous Multi-Agent AI Workspace in your terminal. Codes, researches, and executes real tasks with 40+ tools and 280+ skills",
   "main": "dist/index.js",
@@ -68,7 +68,8 @@
     "ink": "^5.0.1",
     "ink-text-input": "^6.0.0",
     "blessed": "^0.1.81",
-    "playwright-core": "^1.60.0"
+    "playwright-core": "^1.60.0",
+    "whois": "^2.1.2"
   },
   "devDependencies": {
     "typescript": "^5.6.3",
