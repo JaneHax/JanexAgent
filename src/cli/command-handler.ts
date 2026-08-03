@@ -150,7 +150,7 @@ export class CommandHandler {
 
   private cmdTheme(args: string[]): boolean {
     if (args.length === 0) {
-      this.ctx.addMessage({ role: 'system', content: 'Current theme: Janex. Available: Janex, dark, light, neon' });
+      this.ctx.addMessage({ role: 'system', content: 'Current theme: Janex. Available: janex' });
     } else {
       this.ctx.addMessage({ role: 'system', content: `Theme changed to: ${args[0]}` });
     }
@@ -402,5 +402,6 @@ export class CommandHandler {
     return true;
   }
 }
+
 
 

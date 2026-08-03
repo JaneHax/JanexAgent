@@ -23,18 +23,7 @@ export interface janexConfig {
   systemPrompt?: string;
   apiStyle?: 'anthropic' | 'openai' | 'auto';
   researchMode?: 'low' | 'medium' | 'high' | 'xhigh' | 'max' | 'ultra';
-  themeName?:
-    | 'janex'
-    | 'opencode'
-    | 'amber'
-    | 'violet'
-    | 'mono'
-    | 'pink'
-    | 'ocean'
-    | 'dark'
-    | 'green'
-    | 'sunset'
-    | 'nebula';
+  themeName?: 'janex';
   accentColor?: string;
   useGroqAudio?: boolean;
   captchaAudio?: 'image' | 'audio' | 'hybrid' | boolean;
@@ -233,5 +222,10 @@ export function saveConfig(config: janexConfig): void {
 }
 
 export const CONFIG_PATH = CONFIG_DIR;
+
+
+
+
+
 
 

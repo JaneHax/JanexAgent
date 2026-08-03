@@ -2274,19 +2274,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
 
         if (commandName === 'theme') {
           if (!slash.args) {
-            const themeDescriptions: Record<ThemeName, string> = {
-              janex: 'Teal + Orange (default)',
-              opencode: 'Cool blue',
-              amber: 'Warm amber ops',
-              violet: 'Purple AI',
-              mono: 'Grayscale',
-              pink: 'Hot pink dream',
-              ocean: 'Deep sea cyan + blue',
-              dark: 'Ultra minimal dark',
-              green: 'Matrix hacker green',
-              sunset: 'Orange to pink warm',
-              nebula: 'Purple + pink cosmic',
-            };
+            const themeDescriptions: Record<ThemeName, string> = { janex: 'Cyan + Orange' };
             const current = config.themeName || 'janex';
             const list = ALL_THEME_NAMES.map((n) =>
               n === current
@@ -2294,7 +2282,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
                 : `    ${n.padEnd(12)} ${themeDescriptions[n]}`
             ).join('\n');
             addAssistant(
-              `Current theme: ${current}\n\nAvailable themes:\n${list}\n\nUsage: /theme <name>\nExample: /theme pink`
+              `Current theme: ${current}\n\nAvailable themes:\n${list}\n\nUsage: /theme <name>\nExample: /theme janex`
             );
             return;
           }
@@ -3257,6 +3245,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
     </box>
   );
 }
+
 
 
 

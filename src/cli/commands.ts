@@ -194,7 +194,7 @@ const baseCommands: SlashCommand[] = [
     name: 'theme',
     argumentHint: '[name]',
     aliases: ['color'],
-    description: 'Switch color theme (pink, ocean, dark, green, sunset, nebula, etc.)',
+    description: 'Switch color theme (janex)',
     group: 'config',
     source: 'claude-code',
   },
@@ -1052,4 +1052,5 @@ export function formatCommandHelp(commands: SlashCommand[]): string {
     })
     .join('\n\n');
 }
+
 

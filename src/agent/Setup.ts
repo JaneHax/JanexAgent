@@ -211,27 +211,7 @@ async function stepTheme(
 }> {
   const choice = await drawSelector({
     title: 'Terminal UI Theme',
-    items: [
-      { id: 'janex', label: 'janex Teal + Orange', desc: 'Matches the logo' },
-      {
-        id: 'opencode',
-        label: 'OpenCode Blue',
-        desc: 'Cool blue terminal accent',
-      },
-      { id: 'amber', label: 'Amber Ops', desc: 'Warm command-center style' },
-      { id: 'violet', label: 'Violet AI', desc: 'Purple accent, still dark' },
-      { id: 'mono', label: 'Mono', desc: 'Minimal grayscale' },
-      { id: 'pink', label: 'Pink Dream', desc: 'Hot pink with rose accents' },
-      { id: 'ocean', label: 'Ocean Blue', desc: 'Deep sea cyan + blue' },
-      { id: 'dark', label: 'Dark Mode', desc: 'Ultra minimal dark gray' },
-      { id: 'green', label: 'Matrix Green', desc: 'Hacker terminal green' },
-      {
-        id: 'sunset',
-        label: 'Sunset Gradient',
-        desc: 'Orange to pink warm gradient',
-      },
-      { id: 'nebula', label: 'Nebula', desc: 'Purple + pink cosmic gradient' },
-    ],
+    items: [{ id: 'janex', label: 'janex Cyan + Orange', desc: 'Default theme' }],
     allowSkip: true,
     extra: existingName
       ? [`Current theme: ${existingName}`, 'Skip keeps current theme.']
@@ -242,22 +222,7 @@ async function stepTheme(
     return { name: existingName, accent: existingAccent || '#fab283' };
   }
 
-  const palette: Record<
-    string,
-    { name: NonNullable<janexConfig['themeName']>; accent: string }
-  > = {
-    janex: { name: 'janex', accent: '#fab283' },
-    opencode: { name: 'opencode', accent: '#fab283' },
-    amber: { name: 'amber', accent: '#FFB020' },
-    violet: { name: 'violet', accent: '#9d7cd8' },
-    mono: { name: 'mono', accent: '#eeeeee' },
-    pink: { name: 'pink', accent: '#ff6b9d' },
-    ocean: { name: 'ocean', accent: '#64ffda' },
-    dark: { name: 'dark', accent: '#c0c0c0' },
-    green: { name: 'green', accent: '#00ff41' },
-    sunset: { name: 'sunset', accent: '#ff6b35' },
-    nebula: { name: 'nebula', accent: '#bd93f9' },
-  };
+  const palette: Record<string, { name: NonNullable<janexConfig['themeName']>; accent: string }> = { janex: { name: 'janex', accent: '#fab283' } };
 
   return palette[choice] || palette.janex;
 }
@@ -1084,6 +1049,9 @@ async function loadConfigOrDefault(): Promise<janexConfig> {
     model: 'gpt-4o',
   };
 }
+
+
+
 
 
 
