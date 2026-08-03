@@ -1,11 +1,11 @@
 {
   "name": "janex-agent",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "type": "module",
   "description": "Autonomous Multi-Agent AI Workspace in your terminal. Codes, researches, and executes real tasks with 40+ tools and 280+ skills",
   "main": "dist/index.js",
   "bin": {
-    "janex-agent": "./bin/janex.js"
+    "janex": "./bin/janex.js"
   },
   "scripts": {
     "build": "node scripts/build.cjs",
@@ -133,4 +133,6 @@
     "pino": "^10.3.1"
   }
 }
+
+
 
