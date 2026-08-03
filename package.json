@@ -5,7 +5,7 @@
     "description":  "Autonomous Multi-Agent AI Workspace in your terminal. Codes, researches, and executes real tasks with 40+ tools and 280+ skills",
     "main":  "dist/index.js",
     "bin":  {
-                "janex":  "./bin/janex.js"
+    "janex-agent": "./bin/janex.js"
             },
     "scripts":  {
                     "build":  "node scripts/build.cjs",
