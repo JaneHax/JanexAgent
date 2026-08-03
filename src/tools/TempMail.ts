@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import type { Tool } from './Registry.js';
 
 const MAIL_TM_BASE_URL = 'https://api.mail.tm';
-const DEFAULT_PASSWORD_PREFIX = 'Janex-temp';
+const DEFAULT_PASSWORD_PREFIX = 'janex-temp';
 
 type TempMailAction = 'create' | 'token' | 'inbox' | 'read';
 
@@ -104,8 +104,8 @@ export const tempMailingTool: Tool = {
         if (!domain) return '[ERROR] Temp-Mailing: no mail.tm domains available.';
 
         const prefix =
-          (asString(args.address_prefix) || 'Janex').replace(/[^a-z0-9._-]/gi, '').slice(0, 24) ||
-          'Janex';
+          (asString(args.address_prefix) || 'janex').replace(/[^a-z0-9._-]/gi, '').slice(0, 24) ||
+          'janex';
         const suffix = crypto.randomBytes(5).toString('hex');
         const address = `${prefix}_${suffix}@${domain}`.toLowerCase();
         const password =
@@ -191,3 +191,4 @@ export const tempMailingTool: Tool = {
     }
   },
 };
+

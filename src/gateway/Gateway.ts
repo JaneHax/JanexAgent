@@ -3,8 +3,8 @@ import { AskUserManager, setGlobalAskCallback } from '../tools/AskUser.js';
 import { EventEmitter } from 'events';
 import fs from 'fs';
 import crypto from 'crypto';
-import type { JanexConfig } from '../agent/config.js';
-import { loadConfig, saveConfig } from '../agent/config.js';
+import type { JanexConfig } from '../agent/Config.js';
+import { loadConfig, saveConfig } from '../agent/Config.js';
 import { AgentLoop } from '../agent/AgentLoop.js';
 import { MemoryEngine } from '../agent/MemoryEngine.js';
 import { renderToolActivityLine, renderToolStart } from '../agent/ToolEventRenderer.js';
@@ -2485,3 +2485,4 @@ function splitMessage(text: string, maxLen: number): string[] {
   if (current) chunks.push(current);
   return chunks.length > 0 ? chunks : [text.slice(0, maxLen)];
 }
+

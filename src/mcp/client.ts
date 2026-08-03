@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { JanexConfig } from '../agent/config.js';
+import { JanexConfig } from '../agent/Config.js';
 
 export interface MCPServer {
   name: string;
@@ -71,3 +71,4 @@ export class MCPClient {
     return Array.from(this.clients.keys());
   }
 }
+

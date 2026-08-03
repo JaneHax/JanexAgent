@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 
-const CACHE_DIR = path.join(os.homedir(), '.Janex', 'mcp');
+const CACHE_DIR = path.join(os.homedir(), '.janex', 'mcp');
 const CACHE_FILE = path.join(CACHE_DIR, 'catalog-cache.json');
 const CACHE_TTL = 24 * 60 * 60 * 1000;
 
@@ -130,3 +130,4 @@ export function searchCatalog(entries: CatalogEntry[], query: string): CatalogEn
     e.name.includes(q) || e.description.toLowerCase().includes(q) || e.category.toLowerCase().includes(q)
   );
 }
+

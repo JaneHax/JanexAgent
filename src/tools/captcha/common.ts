@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { type Page } from 'playwright-core';
 import { homedir } from 'os';
 import { join, dirname } from 'path';
@@ -10,7 +9,7 @@ export const TRAINING_DIR = join(
   dirname(dirname(dirname(dirname(fileURLToPath(import.meta.url))))),
   'training'
 );
-import { loadConfig } from '../../agent/config.js';
+import { loadConfig } from '../../agent/Config.js';
 import { createProvider } from '../../providers/index.js';
 
 export function readFileBase64(path: string): string {
@@ -140,7 +139,7 @@ export async function analyzeTileCrops(
   try {
     for (let i = 0; i < Math.min(3, tileCrops.length); i++) {
       writeFileSync(
-        join(homedir(), `.Janex-tile-${i}.png`),
+        join(homedir(), `.janex-tile-${i}.png`),
         Buffer.from(tileCrops[i].base64, 'base64')
       );
     }
@@ -749,3 +748,4 @@ export async function findGridTiles(frame: any, provider: string) {
     }
   }
 }
+

@@ -17,7 +17,7 @@ export function detectTerminalCapabilities(
     platform !== 'win32' ||
     Boolean(env.WT_SESSION || env.TERM_PROGRAM || env.ConEmuANSI === 'ON' || env.ANSICON)
   );
-  const animation = isTTY && !dumb && env.Janex_NO_ANIMATION !== '1' && env.CI !== 'true';
+  const animation = isTTY && !dumb && env.janex_NO_ANIMATION !== '1' && env.CI !== 'true';
   return { color, unicode, animation, interactive: isTTY && !dumb };
 }
 
@@ -31,3 +31,4 @@ export function statusGlyphs(capabilities: TerminalCapabilities): {
     ? { success: '✓', error: '✗', running: '✢', tool: '▸' }
     : { success: '[ok]', error: '[error]', running: '*', tool: '>' };
 }
+

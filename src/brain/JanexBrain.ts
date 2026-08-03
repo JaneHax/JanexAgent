@@ -1,13 +1,5 @@
-// @ts-nocheck
-import type { JanexConfig } from '../agent/config.js';
-
-export interface EvidenceItem {
-  kind: string;
-  content: string;
-  source: string;
-  confidence: number;
-}
-
+import type { janexConfig } from '../agent/Config.js';
+import type { EvidenceItem } from '../agent/SessionStore.js';
 import { resolveModelCapabilities } from './ModelCapabilities.js';
 import { RepoBrain } from './RepoBrain.js';
 import { Scratchpad } from './Scratchpad.js';
@@ -22,14 +14,14 @@ function capTransientContext(text: string, maxChars = MAX_TRANSIENT_CONTEXT_CHAR
   return `${text.slice(0, maxChars)}\n...\n[brain transient context capped]`;
 }
 
-export class JanexBrain {
+export class janexBrain {
   private capabilities: ModelCapabilities;
   private repo?: RepoBrain;
   private scratchpad: Scratchpad;
   private browserFusion = new BrowserStateFusion();
   private evidenceGate = new EvidenceGate();
 
-  constructor(input: { config: JanexConfig; sessionId: string; cwd: string }) {
+  constructor(input: { config: janexConfig; sessionId: string; cwd: string }) {
     this.capabilities = resolveModelCapabilities(input.config);
     if (input.config.brain?.repoIndex !== false) {
       this.repo = new RepoBrain(input.cwd);
@@ -110,3 +102,5 @@ export class JanexBrain {
     });
   }
 }
+
+

@@ -109,8 +109,8 @@ async function scanFrame(frame: Frame | Page, intent: FormIntent): Promise<Field
         const formIndex = form ? Array.from(document.forms).indexOf(form as HTMLFormElement) : -1;
         const containers = Array.from(document.querySelectorAll('form, [role="dialog"], [role="form"], section, main, article, div'));
         const containerIndex = container ? containers.indexOf(container) : -1;
-        const scopeId = `Janex-${formIndex >= 0 ? `form-${formIndex}` : `container-${containerIndex}`}`;
-        container?.setAttribute('data-Janex-form-scope', scopeId);
+        const scopeId = `janex-${formIndex >= 0 ? `form-${formIndex}` : `container-${containerIndex}`}`;
+        container?.setAttribute('data-janex-form-scope', scopeId);
         return {
           index: fieldIndex,
           tag: element.tagName.toLowerCase(),
@@ -131,7 +131,7 @@ async function scanFrame(frame: Frame | Page, intent: FormIntent): Promise<Field
           editable: !el.disabled && !el.readOnly,
           formKey: form ? `form:${formIndex}` : `container:${containerIndex}`,
           formText: `${heading} ${(container?.textContent || '').slice(0, 500)}`.trim(),
-          scopeSelector: `[data-Janex-form-scope="${scopeId}"]`,
+          scopeSelector: `[data-janex-form-scope="${scopeId}"]`,
         } satisfies FieldMeta;
       }, index);
       if (!meta.editable || meta.disabled || meta.readonly) continue;
@@ -311,3 +311,4 @@ export function formatFormAssistResult(result: FormAssistResult): string {
   for (const detail of result.details) lines.push(`- ${detail}`);
   return lines.join('\n');
 }
+

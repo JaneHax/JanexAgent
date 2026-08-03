@@ -112,7 +112,7 @@ async function yahooJson<T>(url: string): Promise<T> {
     headers: {
       accept: 'application/json,text/plain,*/*',
       'user-agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36 JanexAgent/Trading',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36 janexAgent/Trading',
     },
   });
   const body = await resp.text();
@@ -404,3 +404,4 @@ async function tradingReport(symbol: string, period: string): Promise<string> {
 
   return `=== TRADING REPORT: ${symbol} ===\n\n${results.join('\n\n---\n\n')}`;
 }
+

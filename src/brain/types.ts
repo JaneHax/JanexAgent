@@ -1,11 +1,4 @@
-export interface EvidenceItem {
-  kind: string;
-  content: string;
-  source: string;
-  confidence: number;
-  status?: 'passed' | 'failed' | 'pending';
-  label?: string;
-}
+import type { EvidenceItem } from '../agent/SessionStore.js';
 
 export interface ModelCapabilities {
   vision: boolean;

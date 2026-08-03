@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Runs automatically after `npm install` (postinstall hook).
-// Fixes the two things that commonly break aurix on Windows:
+// Fixes the two things that commonly break janex on Windows:
 //   1. @opentui/core-win32-x64 optional dependency sometimes gets skipped
 //      (network glitch, --omit=optional, pnpm strict).
 //   2. Bun runtime (preferred over Node because it has built-in FFI,
@@ -31,6 +31,7 @@ if (process.platform === 'win32') {
     log(`✓ ${pkgName} already installed`);
   } else {
     log(`⚠ ${pkgName} missing — installing (this optionalDependency is sometimes skipped by npm)`);
+    // shell:true needed on Windows so `npm` resolves through npm.cmd
     const ok = run('npm', [
       'install', '--no-save', '--no-audit', '--no-fund', `${pkgName}@0.4.1`,
     ], { cwd: projectRoot, shell: true });
@@ -101,4 +102,5 @@ try {
 }
 
 log('');
-log('✓ postinstall complete. Run `janex-agent` to start.');
+log('✓ postinstall complete. Run `janex` to start.');
+

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { ToolDef } from '../providers/index.js';
 
 export interface ToolExecutionEvent {
@@ -362,3 +361,4 @@ function redactArgs(args: Record<string, unknown>): Record<string, unknown> {
   }
   return out;
 }
+

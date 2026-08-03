@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { AgentContext } from '../src/agent/context.js';
+import { AgentContext } from '../src/agent/AgentContext.js';
 
 describe('AgentContext', () => {
   let context: AgentContext;
@@ -53,3 +53,4 @@ describe('AgentContext', () => {
     expect(tokens).toBeGreaterThan(0);
   });
 });
+

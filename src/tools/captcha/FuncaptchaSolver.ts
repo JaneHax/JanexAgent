@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * FunCaptcha (Arkose Labs) solver — API-level approach.
  *
@@ -18,7 +17,7 @@ import { createHash, createCipheriv, createDecipheriv, randomBytes } from 'crypt
 import { writeFileSync, unlinkSync, readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
-import { loadConfig } from '../../agent/config.js';
+import { loadConfig } from '../../agent/Config.js';
 import { request as undiciRequest, ProxyAgent } from 'undici';
 
 // ─── MurmurHash3 x64-128 ───────────────────────────────────────────────────
@@ -749,7 +748,7 @@ export class FuncaptchaSolver {
         imgBuffer = Buffer.from(arkoseDecrypt(imgBuffer.toString(), decKey), 'base64');
       } catch {}
 
-      const imgPath = join(homedir(), `.Janex-funcaptcha-wave-${wave}.png`);
+      const imgPath = join(homedir(), `.janex-funcaptcha-wave-${wave}.png`);
       writeFileSync(imgPath, imgBuffer);
       const imgBase64 = imgBuffer.toString('base64');
 
@@ -879,7 +878,7 @@ export class FuncaptchaSolver {
       if (audioResp.body.includes('DENIED ACCESS')) return { success: false, error: 'Audio access denied by Arkose' };
       if (audioResp.status !== 200 || audioResp.body.length < 1000) return { success: false, error: `Audio download failed` };
 
-      const audioPath = join(homedir(), '.Janex-funcaptcha-audio.wav');
+      const audioPath = join(homedir(), '.janex-funcaptcha-audio.wav');
       writeFileSync(audioPath, audioResp.body);
 
       const config = loadConfig();

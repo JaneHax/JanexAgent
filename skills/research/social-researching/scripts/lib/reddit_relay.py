@@ -1,6 +1,6 @@
-"""Aurix Reddit relay adapter.
+"""janex Reddit relay adapter.
 
-Calls a user-hosted Aurix Reddit relay (typically Vercel) and returns the same
+Calls a user-hosted janex Reddit relay (typically Vercel) and returns the same
 normalized item shape as the other Reddit adapters. The relay should use
 compliant server-side sources such as Reddit OAuth and expose `/api/reddit/search`.
 """
@@ -19,20 +19,20 @@ def _log(msg: str) -> None:
 
 
 def _strict(config: dict[str, Any] | None) -> bool:
-    value = str((config or {}).get("AURIX_REDDIT_RELAY_STRICT") or "").strip().lower()
+    value = str((config or {}).get("janex_REDDIT_RELAY_STRICT") or "").strip().lower()
     return value in {"1", "true", "yes", "on"}
 
 
 def _base_url(config: dict[str, Any] | None) -> str:
-    return str((config or {}).get("AURIX_REDDIT_RELAY_URL") or "").strip().rstrip("/")
+    return str((config or {}).get("janex_REDDIT_RELAY_URL") or "").strip().rstrip("/")
 
 
 def _token(config: dict[str, Any] | None) -> str:
-    return str((config or {}).get("AURIX_REDDIT_RELAY_TOKEN") or "").strip()
+    return str((config or {}).get("janex_REDDIT_RELAY_TOKEN") or "").strip()
 
 
 def _timeout(config: dict[str, Any] | None) -> int:
-    raw = (config or {}).get("AURIX_REDDIT_RELAY_TIMEOUT_SECONDS") or 25
+    raw = (config or {}).get("janex_REDDIT_RELAY_TIMEOUT_SECONDS") or 25
     try:
         return max(5, min(90, int(raw)))
     except (TypeError, ValueError):
@@ -62,7 +62,7 @@ def search_and_enrich(
 ) -> Dict[str, Any]:
     base = _base_url(config)
     if not base:
-        return {"items": [], "error": "AURIX_REDDIT_RELAY_URL is not configured"}
+        return {"items": [], "error": "janex_REDDIT_RELAY_URL is not configured"}
 
     params: dict[str, Any] = {
         "q": topic,
@@ -106,3 +106,4 @@ def search_and_enrich(
     else:
         _log("Relay returned 0 posts")
     return {"items": items, "warnings": warnings, "backend": data.get("backend")}
+

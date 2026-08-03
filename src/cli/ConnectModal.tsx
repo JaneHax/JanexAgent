@@ -190,3 +190,4 @@ export function ConnectModal({ platform, onSubmit, onCancel }: ConnectModalProps
     </box>
   );
 }
+

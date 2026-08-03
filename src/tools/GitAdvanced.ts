@@ -132,7 +132,7 @@ Actions:
           case 'approve':
             await ghApi(`/repos/${repo}/pulls/${prNum}/reviews`, 'POST', {
               event: 'APPROVE',
-              body: body || 'LGTM! Approved via Janex Agent.',
+              body: body || 'LGTM! Approved via janex Agent.',
             });
             return `PR #${prNum} approved.`;
           case 'changes':
@@ -302,3 +302,4 @@ Actions:
     );
   },
 };
+

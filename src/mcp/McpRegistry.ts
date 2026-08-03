@@ -3,7 +3,7 @@ import path from 'path';
 import os from 'os';
 import { McpClient } from './McpClient.js';
 
-const MCP_CONFIG_DIR = path.join(os.homedir(), '.Janex', 'mcp');
+const MCP_CONFIG_DIR = path.join(os.homedir(), '.janex', 'mcp');
 const MCP_CONFIG_FILE = path.join(MCP_CONFIG_DIR, 'servers.json');
 
 export interface McpServerConfig {
@@ -246,3 +246,4 @@ export class McpServerManager {
 }
 
 export const mcpManager = new McpServerManager();
+

@@ -3,7 +3,7 @@ import type { Tool } from './Registry.js';
 
 export const todoTool: Tool = {
   name: 'todo',
-  description: 'Manage a task/todo list. Add, list, complete, or delete tasks. Tasks are saved to Janex.md and displayed in the UI.',
+  description: 'Manage a task/todo list. Add, list, complete, or delete tasks. Tasks are saved to janex.md and displayed in the UI.',
   parameters: {
     type: 'object',
     properties: {
@@ -80,4 +80,5 @@ export const todoTool: Tool = {
     }
   },
 };
+
 

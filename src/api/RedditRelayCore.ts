@@ -58,9 +58,9 @@ let oauthToken: { value: string; expiresAt: number } | undefined;
 export function relayHealth() {
   return {
     ok: true,
-    service: 'Janex-reddit-relay',
+    service: 'janex-reddit-relay',
     hasRedditOAuth: Boolean(process.env.REDDIT_CLIENT_ID && process.env.REDDIT_CLIENT_SECRET),
-    requiresRelayToken: Boolean(process.env.Janex_REDDIT_RELAY_TOKEN),
+    requiresRelayToken: Boolean(process.env.janex_REDDIT_RELAY_TOKEN),
     cacheTtlSeconds: cacheTtlSeconds(),
   };
 }
@@ -530,7 +530,7 @@ function cleanSubreddit(value: string): string {
 }
 
 function authorize(req: any): { ok: true } | { ok: false; message: string } {
-  const token = process.env.Janex_REDDIT_RELAY_TOKEN || '';
+  const token = process.env.janex_REDDIT_RELAY_TOKEN || '';
   if (!token) return { ok: true };
   const header = String(req.headers?.authorization || req.headers?.Authorization || '');
   if (header === `Bearer ${token}`) return { ok: true };
@@ -645,7 +645,7 @@ function maxLimit(): number {
 }
 
 function redditUserAgent(): string {
-  return process.env.REDDIT_USER_AGENT || 'Janex-agent-reddit-relay/1.0';
+  return process.env.REDDIT_USER_AGENT || 'janex-agent-reddit-relay/1.0';
 }
 
 function upstreamError(response: Response, json: any, text: string) {
@@ -745,3 +745,4 @@ function decodeHtml(value: string): string {
     .replace(/&#39;/g, "'")
     .replace(/&#x2F;/g, '/');
 }
+

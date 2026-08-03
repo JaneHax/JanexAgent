@@ -94,3 +94,4 @@ export function SessionBrowser({ sessions, onSelect, onCancel }: SessionBrowserP
     </box>
   );
 }
+

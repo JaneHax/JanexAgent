@@ -3,7 +3,7 @@ import { homedir } from 'os';
 import { join } from 'path';
 import type { Page } from 'playwright-core';
 
-export const A11Y_STATE_PATH = join(homedir(), '.Janex', 'hcaptcha-a11y.json');
+export const A11Y_STATE_PATH = join(homedir(), '.janex', 'hcaptcha-a11y.json');
 export const A11Y_COOKIE_NAME = 'hc_accessibility';
 export const A11Y_DOMAIN = '.hcaptcha.com';
 /** Renew / re-ask user when less than this many seconds remain */
@@ -32,7 +32,7 @@ export type HcaptchaA11yState = {
 };
 
 function ensureDir(): void {
-  const dir = join(homedir(), '.Janex');
+  const dir = join(homedir(), '.janex');
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 }
 
@@ -139,7 +139,7 @@ export async function injectA11yCookie(context: {
     return {
       injected: false,
       reason:
-        'no hc_accessibility in ~/.Janex/hcaptcha-a11y.json — ask user to paste cookie value',
+        'no hc_accessibility in ~/.janex/hcaptcha-a11y.json — ask user to paste cookie value',
     };
   }
   const ttl = a11yTtlSeconds(hc);
@@ -186,3 +186,4 @@ export async function detectChallengeAfterClick(page: Page): Promise<boolean> {
     return false;
   }
 }
+

@@ -133,3 +133,4 @@ export function CommandPalette({ commands, onSelect, onCancel }: CommandPaletteP
     </box>
   );
 }
+

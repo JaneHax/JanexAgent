@@ -1,4 +1,4 @@
-// Janex ANSI logo — braille phoenix art
+// janex ANSI logo — braille phoenix art
 // Left half: warm teal (#fab283 palette) | Right half: ocean blue (#2980b9 palette)
 // logoLines() strips ANSI for OpenTUI React; asciiLogo() keeps colors
 
@@ -86,16 +86,16 @@ export function logoLines(): string[] {
   return PLAIN_LINES;
 }
 
-export function JanexLogoMark(): string {
+export function janexLogoMark(): string {
   return '\x1b[38;2;250;178;131m▟▛▜▞\x1b[0m \x1b[38;2;100;169;180mA U R I X\x1b[0m';
 }
 
 export function wordmark(): string {
-  return 'Janex AGENTIC AI  ::  terminal autonomy workspace';
+  return 'janex AGENTIC AI  ::  terminal autonomy workspace';
 }
 
 export function compactLogo(): string {
-  return '\x1b[38;2;250;178;131m▟█\x1b[0m \x1b[38;2;100;169;180mJanex\x1b[0m';
+  return '\x1b[38;2;250;178;131m▟█\x1b[0m \x1b[38;2;100;169;180mjanex\x1b[0m';
 }
 
 export function logoSymbol(): [string, string][] {
@@ -119,3 +119,4 @@ export function banner(model: string, provider: string, version: string = '0.1.0
     version
   );
 }
+

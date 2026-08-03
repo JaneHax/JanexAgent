@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { Message } from '../providers/index.js';
 import type { ChatMessage } from './ChatArea.js';
 

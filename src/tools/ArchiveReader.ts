@@ -303,7 +303,7 @@ export const archiveReaderTool: Tool = {
       return `Security check failed: ${validationError}`;
     }
 
-    const tmpDir = path.join(os.tmpdir(), `Janex-archive-${crypto.randomUUID()}`);
+    const tmpDir = path.join(os.tmpdir(), `janex-archive-${crypto.randomUUID()}`);
     fs.mkdirSync(tmpDir, { recursive: true });
 
     try {
@@ -316,3 +316,4 @@ export const archiveReaderTool: Tool = {
     }
   },
 };
+

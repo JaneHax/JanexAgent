@@ -1,10 +1,9 @@
-// @ts-nocheck
 import { execFile } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { promisify } from 'util';
-import { loadConfig } from '../agent/config.js';
+import { loadConfig } from '../agent/Config.js';
 import type { Tool } from './Registry.js';
 
 const execFileAsync = promisify(execFile);
@@ -12,8 +11,8 @@ const SKILL_DIR = path.resolve(import.meta.dirname, '../../skills/research/socia
 const ENGINE = path.join(SKILL_DIR, 'scripts', 'social-researching.py');
 
 async function detectLocalRedditApi(): Promise<string | undefined> {
-  if (process.env.Janex_REDDIT_LOCAL_API === '0') return undefined;
-  const port = process.env.Janex_API_PORT || process.env.PORT || '3001';
+  if (process.env.janex_REDDIT_LOCAL_API === '0') return undefined;
+  const port = process.env.janex_API_PORT || process.env.PORT || '3001';
   const baseUrl = `http://127.0.0.1:${port}`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 500);
@@ -21,7 +20,7 @@ async function detectLocalRedditApi(): Promise<string | undefined> {
     const response = await fetch(`${baseUrl}/api/health`, { signal: controller.signal });
     if (!response.ok) return undefined;
     const json = await response.json().catch(() => undefined);
-    return json?.service === 'Janex-reddit-relay' ? baseUrl : undefined;
+    return json?.service === 'janex-reddit-relay' ? baseUrl : undefined;
   } catch {
     return undefined;
   } finally {
@@ -67,7 +66,7 @@ export const researchForumsTool: Tool = {
       return `Error: research-forums engine not found at ${ENGINE}. Skill not installed correctly.`;
     }
 
-    const outputDir = path.join(os.homedir(), '.Janex', 'research', 'forums');
+    const outputDir = path.join(os.homedir(), '.janex', 'research', 'forums');
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
     const argv = [
@@ -81,12 +80,12 @@ export const researchForumsTool: Tool = {
     const config = loadConfig();
     const redditEnv: Record<string, string> = {};
     const localRedditApi = config.redditRelayUrl ? undefined : await detectLocalRedditApi();
-    if (config.redditRelayUrl) redditEnv.Janex_REDDIT_RELAY_URL = config.redditRelayUrl;
-    else if (localRedditApi) redditEnv.Janex_REDDIT_RELAY_URL = localRedditApi;
-    if (config.redditRelayToken) redditEnv.Janex_REDDIT_RELAY_TOKEN = config.redditRelayToken;
-    if (config.redditBackend) redditEnv.Janex_REDDIT_BACKEND = config.redditBackend;
+    if (config.redditRelayUrl) redditEnv.janex_REDDIT_RELAY_URL = config.redditRelayUrl;
+    else if (localRedditApi) redditEnv.janex_REDDIT_RELAY_URL = localRedditApi;
+    if (config.redditRelayToken) redditEnv.janex_REDDIT_RELAY_TOKEN = config.redditRelayToken;
+    if (config.redditBackend) redditEnv.janex_REDDIT_BACKEND = config.redditBackend;
     if (config.redditRelayStrict !== undefined) {
-      redditEnv.Janex_REDDIT_RELAY_STRICT = config.redditRelayStrict ? '1' : '0';
+      redditEnv.janex_REDDIT_RELAY_STRICT = config.redditRelayStrict ? '1' : '0';
     }
 
     try {
@@ -136,3 +135,5 @@ export const researchForumsTool: Tool = {
     }
   },
 };
+
+

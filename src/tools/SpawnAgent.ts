@@ -1,6 +1,5 @@
-// @ts-nocheck
 import type { Tool, ToolRegistry } from './Registry.js';
-import type { JanexConfig } from '../agent/config.js';
+import type { janexConfig } from '../agent/Config.js';
 import { EventEmitter } from 'events';
 import crypto from 'crypto';
 import { agentObserverBus } from '../agent/AgentObserverBus.js';
@@ -113,7 +112,7 @@ async function collectAgentResult(
   return lastText || chunks.join('\n') || '(sub-agent produced no output)';
 }
 
-export function createSpawnAgentTool(config: JanexConfig, registry: ToolRegistry): Tool {
+export function createSpawnAgentTool(config: janexConfig, registry: ToolRegistry): Tool {
   return {
     name: 'spawn_agent',
     description: `Run one or more autonomous sub-agents in parallel to handle independent subtasks, then collect their results. Use this to decompose a large task (research many files, check many candidates, run independent investigations) and cover them concurrently. Each sub-agent has the same tools as you EXCEPT it cannot spawn further agents. Up to ${MAX_AGENTS} sub-agents; at most ${MAX_CONCURRENCY} run at once. Each "task" string is a complete, self-contained instruction for one sub-agent — be specific about what to do and what to report back.`,
@@ -221,3 +220,5 @@ export function createSpawnAgentTool(config: JanexConfig, registry: ToolRegistry
     },
   };
 }
+
+

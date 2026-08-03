@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { loadConfig } from '../../agent/config.js';
+import { loadConfig } from '../../agent/Config.js';
 
 type ExternalCaptchaType = 'turnstile' | 'hcaptcha';
 
@@ -22,7 +21,7 @@ export type ExternalCaptchaResult = {
 
 export function externalCaptchaConfigured(): boolean {
   const config = loadConfig();
-  return Boolean(process.env.Janex_CAPTCHA_SOLVER_URL || config.captchaSolver?.url);
+  return Boolean(process.env.janex_CAPTCHA_SOLVER_URL || config.captchaSolver?.url);
 }
 
 export function resolveExternalSolverConfig(captchaSolver?: {
@@ -32,8 +31,8 @@ export function resolveExternalSolverConfig(captchaSolver?: {
 }) {
   const timeoutSeconds = captchaSolver?.timeoutSeconds ?? 90;
   return {
-    url: (process.env.Janex_CAPTCHA_SOLVER_URL || captchaSolver?.url || '').replace(/\/+$/, ''),
-    token: process.env.Janex_CAPTCHA_SOLVER_TOKEN || captchaSolver?.token || '',
+    url: (process.env.janex_CAPTCHA_SOLVER_URL || captchaSolver?.url || '').replace(/\/+$/, ''),
+    token: process.env.janex_CAPTCHA_SOLVER_TOKEN || captchaSolver?.token || '',
     timeoutMs: Math.max(5_000, Math.min(180_000, timeoutSeconds * 1000)),
   };
 }
@@ -60,7 +59,7 @@ export async function solveWithExternalCaptchaSolver(
   args: ExternalCaptchaRequest
 ): Promise<ExternalCaptchaResult> {
   const cfg = solverConfig();
-  if (!cfg.url) return { solved: false, error: 'Janex_CAPTCHA_SOLVER_URL is not configured' };
+  if (!cfg.url) return { solved: false, error: 'janex_CAPTCHA_SOLVER_URL is not configured' };
   if (!/^https?:\/\//i.test(cfg.url)) return { solved: false, error: 'captcha solver URL must be http(s)' };
   if (!args.url || !/^https?:\/\//i.test(args.url)) {
     return { solved: false, error: 'current page URL is not an http(s) URL' };
@@ -107,3 +106,4 @@ export async function solveWithExternalCaptchaSolver(
     clearTimeout(timeout);
   }
 }
+

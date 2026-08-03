@@ -1,10 +1,10 @@
 // @ts-nocheck
-import { JanexConfig } from '../agent/config.js';
+import { JanexConfig } from '../agent/Config.js';
 import { toolRegistry } from '../tools/index.js';
 import { skillRegistry } from '../skills/registry.js';
 import { AgentMemory } from '../agent/memory.js';
 import { ResearchPipeline } from '../agent/research.js';
-import { MultiAgentRouter } from '../agent/multi-agent.js';
+import { MultiAgentRouter } from '../agent/MultiAgent.js';
 import { mcpRegistry } from '../mcp/registry.js';
 import { projectRules } from '../rules/project.js';
 import { pluginManager } from '../plugins/index.js';
@@ -402,3 +402,5 @@ export class CommandHandler {
     return true;
   }
 }
+
+

@@ -24,7 +24,7 @@ export const pdfTool: Tool = {
       },
       output: {
         type: 'string',
-        description: 'Output file path (default: ~/Documents/Janex-output.pdf)',
+        description: 'Output file path (default: ~/Documents/janex-output.pdf)',
       },
       template: {
         type: 'string',
@@ -39,10 +39,10 @@ export const pdfTool: Tool = {
   },
   async execute(args) {
     const content = args.content as string;
-    const title = (args.title as string) || 'Janex Document';
+    const title = (args.title as string) || 'janex Document';
     const template = (args.template as string) || 'report';
     const output =
-      (args.output as string) || path.join(os.homedir(), 'Documents', `Janex-${Date.now()}.pdf`);
+      (args.output as string) || path.join(os.homedir(), 'Documents', `janex-${Date.now()}.pdf`);
     const images = (args.images as string) || '';
 
     const dir = path.dirname(output);
@@ -74,7 +74,7 @@ export const pdfTool: Tool = {
     }
 
     const html = templateToHtml(enrichedContent, title, template);
-    const tmpHtml = path.join(os.tmpdir(), `Janex-doc-${process.pid}-${Date.now()}.html`);
+    const tmpHtml = path.join(os.tmpdir(), `janex-doc-${process.pid}-${Date.now()}.html`);
     fs.writeFileSync(tmpHtml, html);
 
     try {
@@ -189,3 +189,4 @@ function templateToHtml(content: string, title: string, template: string): strin
 </body>
 </html>`;
 }
+

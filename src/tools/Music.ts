@@ -6,8 +6,8 @@ import os from 'os';
 import type { Tool } from './Registry.js';
 
 const execFileAsync = promisify(execFile);
-const MUSIC_DIR = path.join(os.homedir(), '.Janex', 'music');
-const MPV_SOCKET = path.join(os.tmpdir(), `Janex-mpv-${process.pid}.sock`);
+const MUSIC_DIR = path.join(os.homedir(), '.janex', 'music');
+const MPV_SOCKET = path.join(os.tmpdir(), `janex-mpv-${process.pid}.sock`);
 let currentPlayer: ChildProcess | null = null;
 let currentAudioPath = '';
 let currentTrackTitle = '';
@@ -131,7 +131,7 @@ async function playMusic(query: string, source: string): Promise<string> {
   stopCurrentPlayer();
 
   const tmpId = `${process.pid}-${Date.now()}`;
-  const tmpPattern = path.join(os.tmpdir(), `Janex-${tmpId}.%(ext)s`);
+  const tmpPattern = path.join(os.tmpdir(), `janex-${tmpId}.%(ext)s`);
 
   let trackTitle = url;
   try {
@@ -162,10 +162,10 @@ async function playMusic(query: string, source: string): Promise<string> {
     return `Download error: ${e.message}`;
   }
 
-  const audioFile = path.join(os.tmpdir(), `Janex-${tmpId}.mp3`);
+  const audioFile = path.join(os.tmpdir(), `janex-${tmpId}.mp3`);
   let audioPath: string;
   if (!fs.existsSync(audioFile)) {
-    const found = fs.readdirSync(os.tmpdir()).filter((f) => f.startsWith(`Janex-${tmpId}`));
+    const found = fs.readdirSync(os.tmpdir()).filter((f) => f.startsWith(`janex-${tmpId}`));
     if (found.length === 0) return 'Error: downloaded file not found';
     audioPath = path.join(os.tmpdir(), found[0]);
   } else {
@@ -387,3 +387,4 @@ function cleanupAudioFile(filePath: string) {
     fs.unlinkSync(filePath);
   } catch {}
 }
+

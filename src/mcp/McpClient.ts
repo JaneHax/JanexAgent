@@ -141,7 +141,7 @@ export class McpClient extends EventEmitter {
     const result = await this.send('initialize', {
       protocolVersion: '2024-11-05',
       capabilities: {},
-      clientInfo: { name: 'Janex-ai', version: '2.9.5' },
+      clientInfo: { name: 'janex-ai', version: '2.9.5' },
     }) as { capabilities: McpServerCapabilities };
 
     this._capabilities = result.capabilities || {};
@@ -223,3 +223,4 @@ export class McpClient extends EventEmitter {
     this.pending.clear();
   }
 }
+

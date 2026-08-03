@@ -22,7 +22,7 @@ export const gifSearchTool: Tool = {
 
     try {
       const res = await fetch(
-        `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&limit=${limit}&key=${apiKey}&client_key=Janex`
+        `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&limit=${limit}&key=${apiKey}&client_key=janex`
       );
       const data = await res.json() as any;
       const gifs = (data.results || []).map((g: any) => ({
@@ -37,3 +37,4 @@ export const gifSearchTool: Tool = {
     }
   },
 };
+

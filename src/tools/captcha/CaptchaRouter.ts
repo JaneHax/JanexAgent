@@ -117,7 +117,7 @@ export async function autoSolveCaptcha(p: Page): Promise<string[]> {
   if (funcaptchaFrame) {
     results.push('FunCaptcha detected — screenshotting puzzle...');
     try {
-      const fcScreenshotPath = join(homedir(), '.Janex-funcaptcha-puzzle.png');
+      const fcScreenshotPath = join(homedir(), '.janex-funcaptcha-puzzle.png');
       await funcaptchaFrame
         .locator('body')
         .screenshot({ path: fcScreenshotPath })
@@ -174,7 +174,7 @@ export async function analyzeImageChallenge(
   try {
     const home = homedir();
     for (const f of readdirSync(home)) {
-      if (/^\.Janex-tile-(\d+|after-\d+)\.png$/.test(f)) {
+      if (/^\.janex-tile-(\d+|after-\d+)\.png$/.test(f)) {
         try {
           unlinkSync(join(home, f));
         } catch {}
@@ -182,7 +182,7 @@ export async function analyzeImageChallenge(
     }
   } catch {}
 
-  const screenshotPath = join(homedir(), '.Janex-captcha-grid.png');
+  const screenshotPath = join(homedir(), '.janex-captcha-grid.png');
   try {
     const gridEl = frame
       .locator(
@@ -302,7 +302,7 @@ export async function analyzeImageChallenge(
     }, tiles.length);
 
     for (let i = 0; i < tiles.length; i++) {
-      const tilePath = join(homedir(), `.Janex-tile-${i}.png`);
+      const tilePath = join(homedir(), `.janex-tile-${i}.png`);
       try {
         if (i < tileDataUrls.length && tileDataUrls[i]) {
           const b64 = tileDataUrls[i].split(',')[1];
@@ -320,7 +320,7 @@ export async function analyzeImageChallenge(
     }
   } catch {
     for (let i = 0; i < tiles.length; i++) {
-      const tilePath = join(homedir(), `.Janex-tile-${i}.png`);
+      const tilePath = join(homedir(), `.janex-tile-${i}.png`);
       try {
         await tiles[i].screenshot({ path: tilePath });
         results.push(`  Tile ${i}: ${tilePath}`);
@@ -362,3 +362,5 @@ export async function analyzeImageChallenge(
 
   return results.join('\n');
 }
+
+

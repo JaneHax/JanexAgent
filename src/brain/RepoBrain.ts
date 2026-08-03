@@ -20,7 +20,7 @@ const SKIP_DIRS = new Set([
   '.git',
   'node_modules',
   'dist',
-  '.Janex',
+  '.janex',
   '.claude',
   'coverage',
   '.next',
@@ -29,7 +29,7 @@ const SKIP_DIRS = new Set([
 const MAX_FILE_SIZE = 256 * 1024;
 
 function cacheFile(root: string, stateDir?: string): string {
-  const base = stateDir || path.join(os.homedir(), '.Janex', 'state', 'repo-brain');
+  const base = stateDir || path.join(os.homedir(), '.janex', 'state', 'repo-brain');
   const hash = crypto.createHash('sha1').update(root).digest('hex');
   return path.join(base, `${hash}.json`);
 }
@@ -211,3 +211,4 @@ export class RepoBrain {
     return text.length > limitChars ? `${text.slice(0, limitChars)}\n...` : text;
   }
 }
+

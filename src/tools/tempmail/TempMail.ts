@@ -3,7 +3,7 @@ import { fetch } from 'undici';
 export class TempMail {
   private address: string = '';
   private token: string = '';
-  private password: string = 'Janex_temp_pass_123';
+  private password: string = 'janex_temp_pass_123';
 
   /**
    * Initializes a new temporary email account
@@ -128,3 +128,4 @@ export class TempMail {
     throw new Error(`Timeout: No email received after ${timeoutSeconds} seconds.`);
   }
 }
+

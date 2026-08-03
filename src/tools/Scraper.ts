@@ -17,7 +17,7 @@ export const scraperTool: Tool = {
     const url = args.url as string;
     const extract = (args.extract as string) || 'text';
     try {
-      const res = await fetch(url, { headers: { 'User-Agent': 'Janex-Agent/0.1' } });
+      const res = await fetch(url, { headers: { 'User-Agent': 'janex-Agent/0.1' } });
       const html = await res.text();
 
       if (extract === 'text') {
@@ -61,3 +61,4 @@ export const scraperTool: Tool = {
     }
   },
 };
+

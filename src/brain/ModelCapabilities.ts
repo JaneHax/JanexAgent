@@ -1,5 +1,4 @@
-// @ts-nocheck
-import type { JanexConfig } from '../agent/config.js';
+import type { janexConfig } from '../agent/Config.js';
 import type { ModelCapabilities } from './types.js';
 
 const VISION_MODELS = [
@@ -36,7 +35,7 @@ function matchesAny(value: string, needles: string[]): boolean {
   return needles.some((n) => value.includes(n));
 }
 
-export function resolveModelCapabilities(config: JanexConfig): ModelCapabilities {
+export function resolveModelCapabilities(config: janexConfig): ModelCapabilities {
   const override = config.brain?.capabilities;
   const provider = (config.provider || 'custom').toLowerCase();
   const model = (config.model || '').toLowerCase();
@@ -83,3 +82,5 @@ export function resolveModelCapabilities(config: JanexConfig): ModelCapabilities
 
   return capabilities;
 }
+
+

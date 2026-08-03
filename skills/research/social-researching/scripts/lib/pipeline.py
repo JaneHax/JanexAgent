@@ -881,15 +881,15 @@ def _retrieve_stream(
         # Use raw_topic so expand_reddit_queries() generates diverse variants
         # from the original user topic, not the planner's narrowed search_query.
         reddit_query = raw_topic or subquery.search_query
-        backend = (config.get("AURIX_REDDIT_BACKEND") or "auto").lower()
-        strict_relay = str(config.get("AURIX_REDDIT_RELAY_STRICT") or "").lower() in {
+        backend = (config.get("janex_REDDIT_BACKEND") or "auto").lower()
+        strict_relay = str(config.get("janex_REDDIT_RELAY_STRICT") or "").lower() in {
             "1", "true", "yes", "on",
         }
 
         if backend == "off":
             return [], {}
 
-        if config.get("AURIX_REDDIT_RELAY_URL") and backend in {"auto", "relay"}:
+        if config.get("janex_REDDIT_RELAY_URL") and backend in {"auto", "relay"}:
             try:
                 relay_result = reddit_relay.search_and_enrich(
                     reddit_query,
@@ -1178,3 +1178,4 @@ def _mock_stream_results(source: str, subquery: schema.SubQuery) -> tuple[list[d
             "resultCount": 1,
         }
     return payloads.get(source, []), {}
+

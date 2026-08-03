@@ -1,7 +1,6 @@
-// @ts-nocheck
-import type { JanexConfig } from '../agent/config.js';
+import type { janexConfig } from '../agent/Config.js';
 
-type ApiStyle = NonNullable<JanexConfig['apiStyle']>;
+type ApiStyle = NonNullable<janexConfig['apiStyle']>;
 
 const VERSION_SEGMENT = 'v1';
 
@@ -73,4 +72,6 @@ function joinPath(left: string, right: string): string {
 function joinUrl(base: string, endpoint: string): string {
   return `${base.replace(/\/+$/, '')}/${endpoint.replace(/^\/+/, '')}`;
 }
+
+
 

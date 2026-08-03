@@ -3,7 +3,7 @@ import path from 'path';
 import os from 'os';
 import type { Tool } from './Registry.js';
 
-const GITHUB_CONFIG_DIR = path.join(os.homedir(), '.Janex', 'github');
+const GITHUB_CONFIG_DIR = path.join(os.homedir(), '.janex', 'github');
 const GITHUB_TOKEN_FILE = path.join(GITHUB_CONFIG_DIR, 'token');
 const GITHUB_REPOS_FILE = path.join(GITHUB_CONFIG_DIR, 'repos.json');
 
@@ -331,3 +331,4 @@ export const githubTools: Tool[] = [
     },
   },
 ];
+

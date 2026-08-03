@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { AgentContext } from '../agent/context.js';
-import { JanexConfig } from '../agent/config.js';
+import { JanexConfig } from '../agent/Config.js';
 import { browserTool } from '../tools/browser/browser.js';
 import { captchaSolver } from '../tools/browser/captcha.js';
 import { webSearchTool } from '../tools/research/search.js';
@@ -198,3 +198,4 @@ export class ToolRegistry {
 }
 
 export const toolRegistry = new ToolRegistry();
+

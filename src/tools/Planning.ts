@@ -3,7 +3,7 @@ import path from 'path';
 import os from 'os';
 import type { Tool } from './Registry.js';
 
-const PLANS_DIR = path.join(os.homedir(), '.Janex', 'plans');
+const PLANS_DIR = path.join(os.homedir(), '.janex', 'plans');
 
 export const planningTool: Tool = {
   name: 'planning',
@@ -233,3 +233,4 @@ function deletePlan(name: string): string {
   fs.unlinkSync(file);
   return `Plan deleted: ${name}`;
 }
+

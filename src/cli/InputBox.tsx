@@ -457,7 +457,7 @@ export function InputBox({
           <text fg={theme.textMuted}>{'  '}esc to cancel</text>
         </box>
         <box marginTop={1} paddingX={1}>
-          <text fg={theme.text}>{model || 'Janex'}</text><text fg={theme.textMuted}>{' · ctx '}</text><text fg={barColor}>{ctxBar}</text><text fg={theme.textMuted}>{` ${Math.round(contextPct)}%`}</text><text fg={theme.border}>{' · '}</text><text fg={theme.textMuted}>{homeDir}</text>
+          <text fg={theme.text}>{model || 'janex'}</text><text fg={theme.textMuted}>{' · ctx '}</text><text fg={barColor}>{ctxBar}</text><text fg={theme.textMuted}>{` ${Math.round(contextPct)}%`}</text><text fg={theme.border}>{' · '}</text><text fg={theme.textMuted}>{homeDir}</text>
         </box>
       </box>
     );
@@ -482,7 +482,7 @@ export function InputBox({
           {fileSuggestionsVisible && <FileSuggestions files={fileSuggestions} selected={selectedCommand} />}
           <box paddingX={2} paddingTop={1} paddingBottom={1} minHeight={3}>{editor}</box>
           <box paddingX={2} paddingBottom={1} flexDirection="row" justifyContent="flex-end">
-            <text fg={MODE_COLOR[mode]} attributes={TextAttributes.BOLD}>{MODE_LABEL[mode]}</text><text fg={theme.textMuted}>{'  '}</text><text fg={theme.text}>{model || 'Janex'}</text><text fg={theme.textMuted}>{' · ctx '}</text><text fg={barColor}>{ctxBar}</text><text fg={theme.textMuted}>{` ${Math.round(contextPct)}%`}</text>
+            <text fg={MODE_COLOR[mode]} attributes={TextAttributes.BOLD}>{MODE_LABEL[mode]}</text><text fg={theme.textMuted}>{'  '}</text><text fg={theme.text}>{model || 'janex'}</text><text fg={theme.textMuted}>{' · ctx '}</text><text fg={barColor}>{ctxBar}</text><text fg={theme.textMuted}>{` ${Math.round(contextPct)}%`}</text>
           </box>
         </box>
       </box>
@@ -497,7 +497,7 @@ export function InputBox({
         <box paddingX={2} paddingTop={1} paddingBottom={1} minHeight={3}>{editor}</box>
       </box>
       <box paddingX={1} marginTop={1} flexDirection="row" justifyContent="space-between">
-        <box><text fg={MODE_COLOR[mode]} attributes={TextAttributes.BOLD}>{MODE_LABEL[mode]}</text><text fg={theme.textMuted}>{'  '}</text><text fg={theme.text}>{model || 'Janex'}</text><text fg={theme.textMuted}>{' · ctx '}</text><text fg={barColor}>{ctxBar}</text><text fg={theme.textMuted}>{` ${Math.round(contextPct)}%`}</text></box>
+        <box><text fg={MODE_COLOR[mode]} attributes={TextAttributes.BOLD}>{MODE_LABEL[mode]}</text><text fg={theme.textMuted}>{'  '}</text><text fg={theme.text}>{model || 'janex'}</text><text fg={theme.textMuted}>{' · ctx '}</text><text fg={barColor}>{ctxBar}</text><text fg={theme.textMuted}>{` ${Math.round(contextPct)}%`}</text></box>
         <box><text fg={theme.textMuted}>{homeDir}</text></box>
       </box>
     </box>
@@ -581,3 +581,5 @@ function CommandSuggestions({
     </box>
   );
 }
+
+

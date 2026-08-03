@@ -43,12 +43,12 @@ export function detectInstallMethod(
           packagePath.includes('/node_modules/') ? 'npm' : 'unknown');
 
   const commands: Record<InstallMethod, string> = {
-    npm: 'npm install -g Janex-ai@latest',
-    pnpm: 'pnpm add -g Janex-ai@latest',
-    yarn: 'yarn global add Janex-ai@latest',
-    bun: 'bun add -g Janex-ai@latest',
+    npm: 'npm install -g janex-ai@latest',
+    pnpm: 'pnpm add -g janex-ai@latest',
+    yarn: 'yarn global add janex-ai@latest',
+    bun: 'bun add -g janex-ai@latest',
     source: 'git pull && bun install && bun run build',
-    unknown: 'npm install -g Janex-ai@latest',
+    unknown: 'npm install -g janex-ai@latest',
   };
   return {
     method: inferred,
@@ -70,3 +70,4 @@ export function terminalDiagnostics(env: NodeJS.ProcessEnv = process.env): strin
     `Win32 console guard: ${process.platform === 'win32' ? 'enabled when FFI is available' : 'not required'}`,
   ];
 }
+

@@ -1,28 +1,67 @@
-name: CI
+name: CI + Publish
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
+    tags: [ 'v*' ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm install --legacy-peer-deps
-      - run: npm run lint
-
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm install --legacy-peer-deps
-      - run: npm run build
+    - uses: actions/checkout@v4
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+    - name: Install dependencies
+      run: bun install
+    - name: Typecheck
+      run: bun run typecheck
+    - name: Run tests
+      run: bun run test
+    - name: Run Build
+      run: bun run build
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        registry-url: 'https://registry.npmjs.org'
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+    - name: Install dependencies
+      run: bun install
+    - name: Build
+      run: bun run build
+    - name: Check version change
+      id: version
+      run: |
+        LOCAL=$(node -p "require('./package.json').version")
+        REMOTE=$(npm view janex-ai version 2>/dev/null || echo "0.0.0")
+        echo "local=$LOCAL" >> $GITHUB_OUTPUT
+        echo "remote=$REMOTE" >> $GITHUB_OUTPUT
+        if [ "$LOCAL" != "$REMOTE" ]; then
+          echo "changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "changed=false" >> $GITHUB_OUTPUT
+        fi
+    - name: Publish to npm
+      if: steps.version.outputs.changed == 'true'
+      run: npm publish --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+

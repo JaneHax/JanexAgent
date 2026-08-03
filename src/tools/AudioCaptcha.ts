@@ -1,10 +1,9 @@
-// @ts-nocheck
 import { execFile } from 'child_process';
 import { mkdtempSync, readFileSync, writeFileSync, existsSync, rmSync } from 'fs';
 import { basename, join } from 'path';
 import { tmpdir } from 'os';
 import type { Tool } from './Registry.js';
-import { loadConfig } from '../agent/config.js';
+import { loadConfig } from '../agent/Config.js';
 
 const GROQ_AUDIO_TRANSCRIPTIONS_URL = 'https://api.groq.com/openai/v1/audio/transcriptions';
 const GROQ_WHISPER_MODEL = 'whisper-large-v3-turbo';
@@ -41,11 +40,11 @@ async function resolveAudioInput(args: Record<string, unknown>): Promise<AudioIn
   if (!target) throw new Error('Provide audio_url/url or file_path/path.');
 
   if (isUrl(target)) {
-    const dir = mkdtempSync(join(tmpdir(), 'Janex-audio-captcha-'));
+    const dir = mkdtempSync(join(tmpdir(), 'janex-audio-captcha-'));
     const path = join(dir, DEFAULT_AUDIO_NAME);
     const resp = await fetch(target, {
       headers: {
-        'user-agent': 'JanexAgent/AudioCaptcha',
+        'user-agent': 'janexAgent/AudioCaptcha',
         accept: 'audio/*,*/*;q=0.8',
       },
     });
@@ -94,7 +93,7 @@ export async function transcribeAudioCaptchaWithGroq(
   const apiKey =
     asString(args.api_key || args.apiKey) || config.groqApiKey || process.env.GROQ_API_KEY || '';
   if (!apiKey) {
-    return '[ERROR] Missing Groq API key. Set groqApiKey in ~/.Janex/config.yaml or GROQ_API_KEY.';
+    return '[ERROR] Missing Groq API key. Set groqApiKey in ~/.janex/config.yaml or GROQ_API_KEY.';
   }
 
   let input: AudioInput | undefined;
@@ -149,7 +148,7 @@ export async function transcribeAudioCaptchaLocal(args: Record<string, unknown>)
     input = await resolveAudioInput(args);
     const { language } = pickAudioInput(args);
     const model = asString(args.model) || 'small';
-    const dir = mkdtempSync(join(tmpdir(), 'Janex-whisper-output-'));
+    const dir = mkdtempSync(join(tmpdir(), 'janex-whisper-output-'));
     try {
       await execFilePromise(
         'whisper',
@@ -194,7 +193,7 @@ export async function transcribeAudioCaptchaLocal(args: Record<string, unknown>)
 export const audioCaptchaTool: Tool = {
   name: 'audio_captcha',
   description:
-    'Transcribe an audio verification challenge using the configured Groq Whisper Large model. Use this for audio captcha URLs/files instead of terminal curl/whisper commands. Reads groqApiKey from ~/.Janex/config.yaml or GROQ_API_KEY.',
+    'Transcribe an audio verification challenge using the configured Groq Whisper Large model. Use this for audio captcha URLs/files instead of terminal curl/whisper commands. Reads groqApiKey from ~/.janex/config.yaml or GROQ_API_KEY.',
   parameters: {
     type: 'object',
     properties: {
@@ -226,3 +225,5 @@ export const audioCaptchaLocalTool: Tool = {
   },
   execute: transcribeAudioCaptchaLocal,
 };
+
+

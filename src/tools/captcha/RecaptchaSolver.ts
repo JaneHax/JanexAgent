@@ -27,7 +27,7 @@ import {
   TRAINING_DIR,
 } from './common.js';
 import { checkAudioButton, solveAudioCaptcha } from './AudioBypass.js';
-import { loadConfig } from '../../agent/config.js';
+import { loadConfig } from '../../agent/Config.js';
 
 export type CaptchaSaveState = {
   instruction: string;
@@ -46,7 +46,7 @@ export function createCaptchaSaveState(_provider: string): CaptchaSaveState {
     gridCols: 0,
     actualTileCount: 0,
     matchedIndices: [],
-    gridScreenshotPath: join(homedir(), '.Janex-captcha-grid.png'),
+    gridScreenshotPath: join(homedir(), '.janex-captcha-grid.png'),
     is3x3Flip: false,
   };
 }
@@ -376,7 +376,7 @@ export async function solveCaptchaGrid(page: any, frame: any, provider: string):
   try {
     const home = homedir();
     for (const f of readdirSync(home)) {
-      if (/^\.Janex-tile-(\d+|after-\d+)\.png$/.test(f)) {
+      if (/^\.janex-tile-(\d+|after-\d+)\.png$/.test(f)) {
         try {
           unlinkSync(join(home, f));
         } catch {}
@@ -663,7 +663,7 @@ export async function solveCaptchaGrid(page: any, frame: any, provider: string):
         // DEBUG: save raw tiles to disk for inspection
         for (const { idx, buf } of tileBufs.slice(0, 9)) {
           try {
-            writeFileSync(join(homedir(), `.Janex-raw-tile-${idx}.png`), buf);
+            writeFileSync(join(homedir(), `.janex-raw-tile-${idx}.png`), buf);
           } catch {}
         }
         try {
@@ -1788,7 +1788,7 @@ Describe: [5-10 words]`;
     _dbg('self-review: checking selections...');
     await page.waitForTimeout(300);
     try {
-      const reviewPath = join(homedir(), '.Janex-captcha-review.png');
+      const reviewPath = join(homedir(), '.janex-captcha-review.png');
       let reviewShot = false;
       try {
         await frame.locator('body').screenshot({ path: reviewPath, timeout: 5000 });
@@ -2055,7 +2055,7 @@ Describe: [5-10 words]`;
           .toBuffer();
         await sharp(composedBuf).toFile(gridScreenshotPath);
         try {
-          await sharp(composedBuf).toFile(join(homedir(), `.Janex-postflip-round${round + 1}.png`));
+          await sharp(composedBuf).toFile(join(homedir(), `.janex-postflip-round${round + 1}.png`));
         } catch {}
 
         // Grid-level analysis only (fast: 1 API call per round)
@@ -2467,3 +2467,5 @@ Answer: {"yes": [numbers]}`;
     return results.join('\n');
   }
 }
+
+

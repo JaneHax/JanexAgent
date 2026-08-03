@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { createRequire } from 'module';
 import { marked } from 'marked';
 import markedTerminal from 'marked-terminal';
@@ -7,7 +6,7 @@ import ora from 'ora';
 import { AgentLoop } from '../agent/AgentLoop.js';
 import { renderToolSpinnerText } from '../agent/ToolEventRenderer.js';
 import { ToolRegistry } from '../tools/Registry.js';
-import type { JanexConfig } from '../agent/config.js';
+import type { janexConfig } from '../agent/Config.js';
 import { asciiLogo } from '../utils/ascii-logo.js';
 import { safeDisplayText } from '../utils/terminal-sanitize.js';
 import { formatStructuredOutput } from '../utils/StructuredOutputFormat.js';
@@ -38,12 +37,12 @@ function readLiteInput(message: string): Promise<string> {
   });
 }
 
-export async function runLiteApp(config: JanexConfig, registry: ToolRegistry) {
+export async function runLiteApp(config: janexConfig, registry: ToolRegistry) {
   const agent = new AgentLoop(config, registry);
 
   console.clear();
   console.log(asciiLogo());
-  console.log(chalk.dim('Janex Agent  ::  terminal autonomy workspace'));
+  console.log(chalk.dim('janex Agent  ::  terminal autonomy workspace'));
   console.log(
     chalk.gray('provider ' + config.provider + ' · model ' + config.model),
   );
@@ -52,7 +51,7 @@ export async function runLiteApp(config: JanexConfig, registry: ToolRegistry) {
   console.log();
 
   while (true) {
-    const userInput = await readLiteInput(chalk.cyan.bold('Janex >'));
+    const userInput = await readLiteInput(chalk.cyan.bold('janex >'));
     const text = userInput.trim();
     if (!text) continue;
 
@@ -69,7 +68,7 @@ export async function runLiteApp(config: JanexConfig, registry: ToolRegistry) {
     }
 
     if (text === '/help') {
-      console.log(chalk.cyan.bold('Janex Agent — Lite Mode\n'));
+      console.log(chalk.cyan.bold('janex Agent — Lite Mode\n'));
       console.log('  /exit, /quit, /q     Exit session');
       console.log('  /clear               Clear transcript');
       console.log('  /help                Show this help');
@@ -120,3 +119,5 @@ export async function runLiteApp(config: JanexConfig, registry: ToolRegistry) {
     }
   }
 }
+
+

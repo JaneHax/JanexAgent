@@ -129,3 +129,4 @@ export function WhatsAppModal({ qrData, status, errorMsg, onClose }: WhatsAppMod
     </box>
   );
 }
+

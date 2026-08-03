@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { loadConfig } from './agent/config.js';
+import { loadConfig } from './agent/Config.js';
 import { Gateway } from './gateway/Gateway.js';
 import { ToolRegistry } from './tools/Registry.js';
 
@@ -48,7 +47,7 @@ export async function startGateway(registry: ToolRegistry) {
   const config = loadConfig();
 
   if (!config.apiKey) {
-    console.error('Error: No API key configured. Run: Janex setup');
+    console.error('Error: No API key configured. Run: janex setup');
     process.exit(1);
   }
 
@@ -58,17 +57,17 @@ export async function startGateway(registry: ToolRegistry) {
   const gw = config.gateway;
 
   if (gw?.discord?.enabled && gw.discord.token) {
-    const { DiscordPlatform } = await import('./gateway/discord.js');
+    const { DiscordPlatform } = await import('./gateway/Discord.js');
     gateway.register(new DiscordPlatform(gw.discord.token));
   }
 
   if (gw?.telegram?.enabled && gw.telegram.token) {
-    const { TelegramPlatform } = await import('./gateway/telegram.js');
+    const { TelegramPlatform } = await import('./gateway/Telegram.js');
     gateway.register(new TelegramPlatform(gw.telegram.token));
   }
 
   if (gw?.whatsapp?.enabled) {
-    const { WhatsAppPlatform } = await import('./gateway/whatsapp.js');
+    const { WhatsAppPlatform } = await import('./gateway/WhatsApp.js');
     gateway.register(new WhatsAppPlatform());
   }
 
@@ -76,7 +75,7 @@ export async function startGateway(registry: ToolRegistry) {
     console.error(`
   No gateway platforms configured.
 
-  Edit ~/.Janex/config.yaml:
+  Edit ~/.janex/config.yaml:
 
   gateway:
     discord:
@@ -104,3 +103,4 @@ export async function startGateway(registry: ToolRegistry) {
 
   await gateway.start();
 }
+

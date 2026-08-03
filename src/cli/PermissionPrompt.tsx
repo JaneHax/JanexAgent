@@ -130,3 +130,4 @@ export function PermissionPrompt({ request, onResolve }: PermissionPromptProps) 
     </box>
   );
 }
+

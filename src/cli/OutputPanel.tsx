@@ -133,3 +133,4 @@ export function OutputPanel({ messages, onClose }: OutputPanelProps) {
     </box>
   );
 }
+

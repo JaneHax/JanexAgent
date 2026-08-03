@@ -17,7 +17,7 @@ export const frontendTools: Tool[] = [
       const extract = (args.extract as string) || 'all';
       try {
         const res = await fetch(url, {
-          headers: { 'User-Agent': 'Janex-Agent/0.1' },
+          headers: { 'User-Agent': 'janex-Agent/0.1' },
         });
         const html = await res.text();
         const title = html.match(/<title>(.*?)<\/title>/i)?.[1] || 'No title';
@@ -116,3 +116,4 @@ export const frontendTools: Tool[] = [
     },
   },
 ];
+

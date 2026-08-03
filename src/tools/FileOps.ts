@@ -1,4 +1,3 @@
-// @ts-nocheck
 import fs from 'fs';
 import path from 'path';
 import type { Tool } from './Registry.js';
@@ -176,7 +175,7 @@ export const deleteFolderTool: Tool = {
 
 export const recoveryFileTool: Tool = {
   name: 'recovery_file',
-  description: `Recover a deleted file that Janex moved to recoverable trash. Use the Recovery ID returned by delete_file or the original file path. Recovery expires after 5 user chats from deletion.`,
+  description: `Recover a deleted file that janex moved to recoverable trash. Use the Recovery ID returned by delete_file or the original file path. Recovery expires after 5 user chats from deletion.`,
   parameters: {
     type: 'object',
     properties: {
@@ -202,7 +201,7 @@ export const recoveryFileTool: Tool = {
 
 export const recoveryFolderTool: Tool = {
   name: 'recovery_folder',
-  description: `Recover a deleted folder that Janex moved to recoverable trash. Use the Recovery ID returned by delete_folder or the original folder path. Recovery expires after 5 user chats from deletion.`,
+  description: `Recover a deleted folder that janex moved to recoverable trash. Use the Recovery ID returned by delete_folder or the original folder path. Recovery expires after 5 user chats from deletion.`,
   parameters: {
     type: 'object',
     properties: {
@@ -255,3 +254,4 @@ export const searchFilesTool: Tool = {
     }
   },
 };
+

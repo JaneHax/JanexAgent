@@ -1,10 +1,10 @@
-import { redactSecrets } from '../utils/redact.js';
+import { redactSessionText } from '../agent/SessionStore.js';
 import type { BrainScratchpadState, BrainToolResult } from './types.js';
 
 const MAX_ITEMS = 12;
 
 function pushUnique(list: string[], value: string): void {
-  const cleaned = redactSecrets(value).replace(/\s+/g, ' ').trim().slice(0, 240);
+  const cleaned = redactSessionText(value).replace(/\s+/g, ' ').trim().slice(0, 240);
   if (!cleaned || list.includes(cleaned)) return;
   list.push(cleaned);
   while (list.length > MAX_ITEMS) list.shift();

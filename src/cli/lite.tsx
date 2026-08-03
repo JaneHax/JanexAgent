@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { JanexAgent } from '../agent/agent.js';
 import { AgentContext } from '../agent/context.js';
-import { JanexConfig } from '../agent/config.js';
+import { JanexConfig } from '../agent/Config.js';
 import { toolRegistry } from '../tools/index.js';
 import { skillRegistry } from '../skills/registry.js';
 import { AgentMemory } from '../agent/memory.js';
@@ -87,3 +87,4 @@ async function loadConfig(): Promise<JanexConfig> {
   const { loadConfig } = await import('../../agent/config.js');
   return loadConfig();
 }
+

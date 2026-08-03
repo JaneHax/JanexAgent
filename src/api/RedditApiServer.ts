@@ -45,7 +45,7 @@ class ApiResponse {
 function sendNotFound(res: ApiResponse) {
   return res.status(404).json({
     ok: false,
-    error: { code: 'not_found', message: 'Unknown Janex API endpoint.' },
+    error: { code: 'not_found', message: 'Unknown janex API endpoint.' },
   });
 }
 
@@ -115,7 +115,7 @@ async function probeExisting(url: string): Promise<RedditApiHandle | undefined> 
     const response = await fetch(`${url}/api/health`, { signal: controller.signal });
     if (!response.ok) return undefined;
     const json = await response.json().catch(() => undefined);
-    if (json?.service !== 'Janex-reddit-relay') return undefined;
+    if (json?.service !== 'janex-reddit-relay') return undefined;
     const parsed = new URL(url);
     return {
       url,
@@ -156,17 +156,17 @@ function listen(server: Server, port: number, host: string): Promise<RedditApiHa
 }
 
 export async function ensureRedditApiServer(
-  port = resolvePort(process.env.Janex_API_PORT || process.env.PORT, 3001)
+  port = resolvePort(process.env.janex_API_PORT || process.env.PORT, 3001)
 ): Promise<RedditApiHandle> {
   if (autoServer) return autoServer;
-  const host = process.env.Janex_API_HOST || '127.0.0.1';
+  const host = process.env.janex_API_HOST || '127.0.0.1';
   const preferredUrl = `http://127.0.0.1:${port}`;
   const existing = port > 0 ? await probeExisting(preferredUrl) : undefined;
   if (existing) {
     autoServer = existing;
-    process.env.Janex_REDDIT_RELAY_URL = existing.url;
-    process.env.Janex_REDDIT_LOCAL_API = '1';
-    console.error(`[Janex api] Reddit API already running on ${existing.url}`);
+    process.env.janex_REDDIT_RELAY_URL = existing.url;
+    process.env.janex_REDDIT_LOCAL_API = '1';
+    console.error(`[janex api] Reddit API already running on ${existing.url}`);
     return existing;
   }
   try {
@@ -175,20 +175,21 @@ export async function ensureRedditApiServer(
     if (error?.code !== 'EADDRINUSE' || port === 0) throw error;
     autoServer = await listen(createRedditApiServer(), 0, '127.0.0.1');
     console.warn(
-      `[Janex api] port ${port} busy; Reddit API auto-started on ${autoServer.url}`
+      `[janex api] port ${port} busy; Reddit API auto-started on ${autoServer.url}`
     );
   }
-  process.env.Janex_REDDIT_RELAY_URL = autoServer.url;
-  process.env.Janex_REDDIT_LOCAL_API = '1';
-  console.error(`[Janex api] Reddit API auto-started on ${autoServer.url}`);
+  process.env.janex_REDDIT_RELAY_URL = autoServer.url;
+  process.env.janex_REDDIT_LOCAL_API = '1';
+  console.error(`[janex api] Reddit API auto-started on ${autoServer.url}`);
   return autoServer;
 }
 
 export async function startRedditApiServer(
-  port = resolvePort(process.env.Janex_API_PORT || process.env.PORT, 3001)
+  port = resolvePort(process.env.janex_API_PORT || process.env.PORT, 3001)
 ) {
-  const handle = await listen(createRedditApiServer(), port, process.env.Janex_API_HOST || '0.0.0.0');
-  console.log(`[Janex api] listening on ${handle.url}`);
-  console.log('[Janex api] endpoints: /api/health, /api/reddit/search, /api/reddit/comments');
+  const handle = await listen(createRedditApiServer(), port, process.env.janex_API_HOST || '0.0.0.0');
+  console.log(`[janex api] listening on ${handle.url}`);
+  console.log('[janex api] endpoints: /api/health, /api/reddit/search, /api/reddit/comments');
   return handle.server;
 }
+

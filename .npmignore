@@ -3,7 +3,7 @@ node_modules/
 .env
 .env.*
 data/
-.aurix-browser-profile/
+.janex-browser-profile/
 ~/.janex/
 *.tsbuildinfo
 coverage/
@@ -47,3 +47,4 @@ docker-compose.yml
 eslint.config.js
 requirements.txt
 package-lock.json
+

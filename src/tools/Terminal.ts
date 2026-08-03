@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { exec, spawn } from 'child_process';
 import type { Tool, ToolExecutionContext } from './Registry.js';
 import {
@@ -175,3 +174,4 @@ export const terminalTool: Tool = {
     return runCommand(command, timeout, context);
   },
 };
+

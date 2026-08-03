@@ -1,11 +1,10 @@
-// @ts-nocheck
-import { loadConfig } from '../agent/config.js';
+import { loadConfig } from '../agent/Config.js';
 import type { Tool } from './Registry.js';
 
 export const webSearchTool: Tool = {
   name: 'web_search',
   description:
-    'Search the web. Configurable engine — DDG (free, default), SearXNG, Serper (Google), or Tavily (AI-optimized). Set in: Janex setup → Search Engine.',
+    'Search the web. Configurable engine — DDG (free, default), SearXNG, Serper (Google), or Tavily (AI-optimized). Set in: janex setup → Search Engine.',
   parameters: {
     type: 'object',
     properties: {
@@ -37,7 +36,7 @@ export const webSearchTool: Tool = {
 };
 
 function noKey(name: string, url: string, envVar: string): string {
-  return `🔑 ${name} needs an API key.\nGet one: ${url}\nSet: export ${envVar}="key"\nOr: Janex setup → Search Engine\n\nRetrying with DDG...`;
+  return `🔑 ${name} needs an API key.\nGet one: ${url}\nSet: export ${envVar}="key"\nOr: janex setup → Search Engine\n\nRetrying with DDG...`;
 }
 
 // ─── DuckDuckGo Instant Answer API (FREE, no key) ──────────────────────────
@@ -49,7 +48,7 @@ async function duckduckgoSearch(query: string, maxResults: number): Promise<stri
   try {
     const res = await fetch(
       `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`,
-      { headers: { 'User-Agent': 'JanexAgent/3.0' } }
+      { headers: { 'User-Agent': 'janexAgent/3.0' } }
     );
     const data = (await res.json()) as any;
 
@@ -119,7 +118,7 @@ async function duckduckgoSearch(query: string, maxResults: number): Promise<stri
     for (const ins of instances) {
       try {
         const r = await fetch(`${ins}/search?q=${encodeURIComponent(query)}&format=json`, {
-          headers: { 'User-Agent': 'JanexAgent/3.0' },
+          headers: { 'User-Agent': 'janexAgent/3.0' },
           signal: AbortSignal.timeout(8000),
         });
         if (!r.ok) continue;
@@ -138,7 +137,7 @@ async function duckduckgoSearch(query: string, maxResults: number): Promise<stri
 
   return results.length > 0
     ? results.join('\n\n')
-    : `No results for "${query}".\nTry: different keywords, browser tool, or set up Serper/Tavily API (Janex setup → Search Engine).`;
+    : `No results for "${query}".\nTry: different keywords, browser tool, or set up Serper/Tavily API (janex setup → Search Engine).`;
 }
 
 // ─── SearXNG (self-hosted or public instances, no key) ───────────────────────
@@ -160,7 +159,7 @@ async function searxngSearch(query: string, maxResults: number, baseUrl?: string
       const params = new URLSearchParams({ q: query, format: 'json' });
       const r = await fetch(`${instance}/search?${params}`, {
         headers: {
-          'User-Agent': 'JanexAgent/3.0',
+          'User-Agent': 'janexAgent/3.0',
           Accept: 'application/json',
         },
         signal: AbortSignal.timeout(10000),
@@ -253,3 +252,5 @@ async function tavilySearch(query: string, maxResults: number, apiKey: string): 
     return `Tavily error: ${e.message}`;
   }
 }
+
+

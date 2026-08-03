@@ -1,5 +1,4 @@
-// @ts-nocheck
-import type { JanexConfig } from '../agent/config.js';
+import type { janexConfig } from '../agent/Config.js';
 
 export const theme = {
   primary: '#fab283',
@@ -77,7 +76,7 @@ export const theme = {
 };
 
 export const brand = {
-  name: 'Janex Agent',
+  name: 'janex Agent',
   icon: '>',
   prompt: '>',
   welcome: 'Ask anything...',
@@ -93,7 +92,7 @@ export function getThemeVersion(): number {
 }
 
 export type ThemeName =
-  | 'Janex'
+  | 'janex'
   | 'opencode'
   | 'amber'
   | 'violet'
@@ -106,7 +105,7 @@ export type ThemeName =
   | 'nebula';
 
 export const ALL_THEME_NAMES: ThemeName[] = [
-  'Janex',
+  'janex',
   'opencode',
   'amber',
   'violet',
@@ -147,7 +146,7 @@ export interface ThemePalette {
 }
 
 const themePalettes: Record<ThemeName, ThemePalette> = {
-  Janex: {
+  janex: {
     primary: '#fab283',
     accent: '#9d7cd8',
     cursor: '#fab283',
@@ -347,9 +346,9 @@ const themePalettes: Record<ThemeName, ThemePalette> = {
   },
 };
 
-export function applyTheme(config: Pick<JanexConfig, 'themeName' | 'accentColor'>): void {
-  const name = (config.themeName || 'Janex') as ThemeName;
-  const palette = themePalettes[name] || themePalettes.Janex;
+export function applyTheme(config: Pick<janexConfig, 'themeName' | 'accentColor'>): void {
+  const name = (config.themeName || 'janex') as ThemeName;
+  const palette = themePalettes[name] || themePalettes.janex;
 
   theme.primary = config.accentColor || palette.primary;
   theme.prompt = theme.primary;
@@ -412,7 +411,7 @@ export function applyTheme(config: Pick<JanexConfig, 'themeName' | 'accentColor'
 }
 
 export function switchTheme(name: ThemeName, accentColor?: string): void {
-  applyTheme({ themeName: name as JanexConfig['themeName'], accentColor });
+  applyTheme({ themeName: name as janexConfig['themeName'], accentColor });
 }
 
 export const box = {
@@ -446,3 +445,5 @@ export function setBorderStyle(style: BorderStyle): void {
   box.border = style === 'none' ? 'rounded' : (style as any);
   box.glyphs = glyphs;
 }
+
+

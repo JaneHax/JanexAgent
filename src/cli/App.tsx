@@ -43,8 +43,8 @@ import {
 } from './commands.js';
 import { AgentLoop } from '../agent/AgentLoop.js';
 import { renderToolEnd } from '../agent/ToolEventRenderer.js';
-import type { JanexConfig } from '../agent/config.js';
-import { CONFIG_PATH, loadConfig, saveConfig } from '../agent/config.js';
+import type { janexConfig } from '../agent/Config.js';
+import { CONFIG_PATH, loadConfig, saveConfig } from '../agent/Config.js';
 import { editSoulFile, formatReloadReport, formatSoulShow, getAgentsStatus, getCanonicalSoulPath, getSoulStatus } from './SoulCommands.js';
 import type { ToolRegistry } from '../tools/Registry.js';
 import type { PermissionReply, ToolPermissionRequest } from '../tools/Registry.js';
@@ -192,7 +192,7 @@ function describeDepthMode(mode: ResearchDepth): string {
   return descriptions[mode];
 }
 
-function normalizeApiStyleInput(value?: string): JanexConfig['apiStyle'] | undefined {
+function normalizeApiStyleInput(value?: string): janexConfig['apiStyle'] | undefined {
   const style = value?.trim().toLowerCase();
   if (!style) return undefined;
   if (style === '1') return 'openai';
@@ -201,7 +201,7 @@ function normalizeApiStyleInput(value?: string): JanexConfig['apiStyle'] | undef
   return undefined;
 }
 
-function normalizeProviderInput(value?: string): JanexConfig['provider'] | undefined {
+function normalizeProviderInput(value?: string): janexConfig['provider'] | undefined {
   const provider = value?.trim().toLowerCase();
   if (!provider) return undefined;
   if (provider === '1') return 'openai';
@@ -218,7 +218,7 @@ function normalizeProviderInput(value?: string): JanexConfig['provider'] | undef
 }
 
 interface AppProps {
-  config: JanexConfig;
+  config: janexConfig;
   registry: ToolRegistry;
   resumeId?: string;
   cronDaemon?: CronDaemon;
@@ -363,7 +363,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
     if (sessionId) {
       process.stdout.write(`\n  \x1b[90msession ended\x1b[0m\n`);
       process.stdout.write(
-        `  \x1b[38;2;250;178;131mcontinue with:\x1b[0m Janex --resume ${sessionId}\n\n`
+        `  \x1b[38;2;250;178;131mcontinue with:\x1b[0m janex --resume ${sessionId}\n\n`
       );
     }
 
@@ -404,7 +404,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
         setMessages([
           {
             role: 'system' as const,
-            content: `Session "${resumeId}" not found. Use /title to name sessions, or run Janex without --resume.`,
+            content: `Session "${resumeId}" not found. Use /title to name sessions, or run janex without --resume.`,
             timestamp: new Date(),
           },
         ]);
@@ -470,7 +470,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
 
   const toolCount = registry.list().length;
   const skills = useMemo(() => {
-    const root = process.env.Janex_HOME || process.cwd();
+    const root = process.env.janex_HOME || process.cwd();
     return loadSkillsFromDir(path.join(root, 'skills'));
   }, []);
   const skillCount = skills.length;
@@ -768,7 +768,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
 
         if (commandName === 'help') {
           addAssistant(
-            `Janex Agent Commands\n\n${formatCommandHelp(commands)}\n\nKeyboard\n  /                 Open slash autocomplete\n  Tab               Complete selected command / cycle mode (Shift+Tab)\n  Up/Down           Navigate suggestions or scroll chat\n  Esc               Interrupt current run\n  Ctrl+L            Clear transcript\n  Ctrl+P            Toggle slash command palette\n  Ctrl+C            Exit`
+            `janex Agent Commands\n\n${formatCommandHelp(commands)}\n\nKeyboard\n  /                 Open slash autocomplete\n  Tab               Complete selected command / cycle mode (Shift+Tab)\n  Up/Down           Navigate suggestions or scroll chat\n  Esc               Interrupt current run\n  Ctrl+L            Clear transcript\n  Ctrl+P            Toggle slash command palette\n  Ctrl+C            Exit`
           );
           return;
         }
@@ -811,7 +811,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
           const enabled = agent.toggleMultiAgent();
           if (enabled) {
             addAssistant(
-              `Native multi-agent routing ON.\n\nJanex will select specialists per task and show route/tool progress when they actually run. Simple prompts may still run direct. Use /agents to inspect mode.`
+              `Native multi-agent routing ON.\n\njanex will select specialists per task and show route/tool progress when they actually run. Simple prompts may still run direct. Use /agents to inspect mode.`
             );
           } else {
             addAssistant('Multi-agent mode OFF. Using single-agent direct mode.');
@@ -1172,7 +1172,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
             `  Handler-only commands: ${audit.hiddenHandler.length ? audit.hiddenHandler.join(', ') : 'none'}\n` +
             `  Visible stubs: ${audit.stubVisible.length ? audit.stubVisible.join(', ') : 'none'}`;
           addAssistant(
-            `Janex Doctor\n${checks.map((c) => `  ✓ ${c}`).join('\n')}\n\n${commandAudit}`
+            `janex Doctor\n${checks.map((c) => `  ✓ ${c}`).join('\n')}\n\n${commandAudit}`
           );
           return;
         }
@@ -1209,14 +1209,14 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
               addAssistant('Usage: /skill new <name>');
               return;
             }
-            const root = process.env.Janex_HOME || process.cwd();
+            const root = process.env.janex_HOME || process.cwd();
             const dir = path.join(root, 'skills', 'custom', name);
             const file = path.join(dir, 'SKILL.md');
             if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
             if (!fs.existsSync(file)) {
               fs.writeFileSync(
                 file,
-                `---\nname: ${name}\ndescription: Custom Janex skill.\ntags: [custom]\n---\n\n# ${name}\n\nUse this skill when the task needs the ${name} workflow.\n`,
+                `---\nname: ${name}\ndescription: Custom janex skill.\ntags: [custom]\n---\n\n# ${name}\n\nUse this skill when the task needs the ${name} workflow.\n`,
                 'utf-8'
               );
             }
@@ -1409,7 +1409,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
         if (commandName === 'export') {
           const exportPath = path.join(
             os.homedir(),
-            '.Janex',
+            '.janex',
             'exports',
             `session-${Date.now()}.md`
           );
@@ -1423,7 +1423,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
             .join('\n\n---\n\n');
           fs.writeFileSync(
             exportPath,
-            `# Janex Session Export\n\nExported: ${new Date().toISOString()}\nModel: ${agent.getModel()}\n\n---\n\n${content}`,
+            `# janex Session Export\n\nExported: ${new Date().toISOString()}\nModel: ${agent.getModel()}\n\n---\n\n${content}`,
             'utf-8'
           );
           addAssistant(`Session exported to:\n${exportPath}`);
@@ -1435,7 +1435,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
           const mem = new MemoryEngine();
           const summary = mem.loadSummary();
           addAssistant(
-            `Memory system\n  Summary: ${summary.length > 0 ? `${summary.length} chars loaded` : '(empty)'}\n  Storage: ~/.Janex/memories/\n  Auto-consolidation: every 10 minutes\n\nRun: Janex memory to inspect outside the TUI.`
+            `Memory system\n  Summary: ${summary.length > 0 ? `${summary.length} chars loaded` : '(empty)'}\n  Storage: ~/.janex/memories/\n  Auto-consolidation: every 10 minutes\n\nRun: janex memory to inspect outside the TUI.`
           );
           return;
         }
@@ -1463,7 +1463,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
         } else if (commandName === 'save') {
           const exportPath = path.join(
             os.homedir(),
-            '.Janex',
+            '.janex',
             'exports',
             `session-${Date.now()}.md`
           );
@@ -1477,7 +1477,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
             .join('\n\n---\n\n');
           fs.writeFileSync(
             exportPath,
-            `# Janex Session\n\nSaved: ${new Date().toISOString()}\n\n---\n\n${content}`,
+            `# janex Session\n\nSaved: ${new Date().toISOString()}\n\n---\n\n${content}`,
             'utf-8'
           );
           addAssistant(`Session saved to:\n${exportPath}`);
@@ -1610,16 +1610,16 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
           outboundText =
             'Verify the current changes: run type checking, tests if available, and validate the build compiles correctly.';
         } else if (commandName === 'init') {
-          const JanexMd = path.join(process.cwd(), 'Janex.md');
-          if (!fs.existsSync(JanexMd)) {
+          const janexMd = path.join(process.cwd(), 'janex.md');
+          if (!fs.existsSync(janexMd)) {
             fs.writeFileSync(
-              JanexMd,
-              `# Janex Project Context\n\n## Overview\nDescribe your project here.\n\n## Architecture\n\n## Conventions\n\n## Key Files\n`,
+              janexMd,
+              `# janex Project Context\n\n## Overview\nDescribe your project here.\n\n## Architecture\n\n## Conventions\n\n## Key Files\n`,
               'utf-8'
             );
           }
           addAssistant(
-            `Project context file created:\n${JanexMd}\n\nEdit Janex.md to provide Janex with project-specific context.`
+            `Project context file created:\n${janexMd}\n\nEdit janex.md to provide janex with project-specific context.`
           );
           return;
         } else if (commandName === 'add-dir') {
@@ -1635,7 +1635,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
             const patterns = await agent.detectWorkflowPatterns(8);
             if (patterns.length === 0) {
               addAssistant(
-                'No repeated workflow patterns detected yet. Run a few verified tasks first; Janex only suggests candidates after repeated successful evidence.'
+                'No repeated workflow patterns detected yet. Run a few verified tasks first; janex only suggests candidates after repeated successful evidence.'
               );
               return;
             }
@@ -1644,14 +1644,14 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
               return `  ${i + 1}. ${p.name} — ${p.sequence.join(' → ')} (${p.count}x, ${p.successfulSessions} successful sessions, ${marker})`;
             });
             addAssistant(
-              `Learning insights\n\n${lines.join('\n')}\n\nJanex will not auto-create skills from one-off work; repeated successful patterns become candidates only.`
+              `Learning insights\n\n${lines.join('\n')}\n\njanex will not auto-create skills from one-off work; repeated successful patterns become candidates only.`
             );
           } catch (e: any) {
             addAssistant(`Insights failed: ${e.message}`);
           }
           return;
         } else if (commandName === 'debug') {
-          addAssistant('Debug logging enabled for this session. Logs stored in ~/.Janex/logs/');
+          addAssistant('Debug logging enabled for this session. Logs stored in ~/.janex/logs/');
           return;
         } else if (commandName === 'queue') {
           addAssistant(
@@ -1824,7 +1824,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
         } else if (commandName === 'update') {
           const install = detectInstallMethod(path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..'));
           addAssistant(
-            `Update method: ${install.detail}\n\nRun:\n  ${install.updateCommand}\n\nRestart Janex after the command completes.`
+            `Update method: ${install.detail}\n\nRun:\n  ${install.updateCommand}\n\nRestart janex after the command completes.`
           );
           return;
         } else if (commandName === 'redraw') {
@@ -1894,7 +1894,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
             return;
           }
           addAssistant(
-            `Current skin: ${config.themeName || 'Janex'}\nAvailable: ${ALL_THEME_NAMES.join(', ')}\n\nUsage: /skin <name> or /theme <name>`
+            `Current skin: ${config.themeName || 'janex'}\nAvailable: ${ALL_THEME_NAMES.join(', ')}\n\nUsage: /skin <name> or /theme <name>`
           );
           return;
         } else if (commandName === 'personality') {
@@ -2070,7 +2070,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
           return;
         } else if (commandName === 'platform' || commandName === 'platforms') {
           addAssistant(
-            'Gateway platforms: not configured.\nUse Janex setup to configure Discord/Telegram/WhatsApp.'
+            'Gateway platforms: not configured.\nUse janex setup to configure Discord/Telegram/WhatsApp.'
           );
           return;
         } else if (commandName === 'restart') {
@@ -2088,7 +2088,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
           );
           return;
         } else if (commandName === 'profile') {
-          addAssistant(`Active profile: default\nHome: ~/.Janex/`);
+          addAssistant(`Active profile: default\nHome: ~/.janex/`);
           return;
         }
 
@@ -2148,7 +2148,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
           }
           registry.unregister(toolName);
           addAssistant(
-            `Tool "${toolName}" disabled. It won't be sent to the AI anymore, saving tokens.\nRe-enable with the appropriate command or restart Janex.`
+            `Tool "${toolName}" disabled. It won't be sent to the AI anymore, saving tokens.\nRe-enable with the appropriate command or restart janex.`
           );
           return;
         }
@@ -2177,7 +2177,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
 
         if (commandName === 'plugin') {
           const [sub, ...rest] = slash.args.split(/\s+/).filter(Boolean);
-          const pluginDir = path.join(os.homedir(), '.Janex', 'plugins');
+          const pluginDir = path.join(os.homedir(), '.janex', 'plugins');
           const registryFile = path.join(pluginDir, 'plugins.json');
           if (!fs.existsSync(pluginDir)) fs.mkdirSync(pluginDir, { recursive: true });
           const readPlugins = (): any[] => {
@@ -2200,7 +2200,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
             plugins.push({ source, installedAt: new Date().toISOString() });
             fs.writeFileSync(registryFile, JSON.stringify(plugins, null, 2), 'utf-8');
             addAssistant(
-              `Plugin source registered:\n${source}\n\nNetwork download/store sync is intentionally separate; local plugin loading will read ~/.Janex/plugins on startup.`
+              `Plugin source registered:\n${source}\n\nNetwork download/store sync is intentionally separate; local plugin loading will read ~/.janex/plugins on startup.`
             );
             return;
           }
@@ -2253,14 +2253,14 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
             }
           });
           addAssistant(
-            `Gmail/email connection\n${checks.join('\n')}\n\nJanex uses himalaya or msmtp for email. Run Janex setup to store Gmail preferences, then use the email tool.`
+            `Gmail/email connection\n${checks.join('\n')}\n\njanex uses himalaya or msmtp for email. Run janex setup to store Gmail preferences, then use the email tool.`
           );
           return;
         }
 
         if (commandName === 'setup') {
           addAssistant(
-            'Run setup from the shell so the full wizard can take over the terminal:\n\n  Janex setup'
+            'Run setup from the shell so the full wizard can take over the terminal:\n\n  janex setup'
           );
           return;
         }
@@ -2275,7 +2275,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
         if (commandName === 'theme') {
           if (!slash.args) {
             const themeDescriptions: Record<ThemeName, string> = {
-              Janex: 'Teal + Orange (default)',
+              janex: 'Teal + Orange (default)',
               opencode: 'Cool blue',
               amber: 'Warm amber ops',
               violet: 'Purple AI',
@@ -2287,7 +2287,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
               sunset: 'Orange to pink warm',
               nebula: 'Purple + pink cosmic',
             };
-            const current = config.themeName || 'Janex';
+            const current = config.themeName || 'janex';
             const list = ALL_THEME_NAMES.map((n) =>
               n === current
                 ? `  > ${n.padEnd(12)} ${themeDescriptions[n]}`
@@ -2488,7 +2488,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
                 );
               } else {
                 addAssistant(
-                  `Unknown preset "${arg}". Use /mcp presets to see available servers.\n\nTo add a custom server, edit ~/.Janex/mcp/servers.json directly.`
+                  `Unknown preset "${arg}". Use /mcp presets to see available servers.\n\nTo add a custom server, edit ~/.janex/mcp/servers.json directly.`
                 );
               }
             }
@@ -2591,7 +2591,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
             setSessionRules([]);
             addAssistant('All session rules cleared.');
           } else if (args === 'edit') {
-            addAssistant('Edit rules in ~/.Janex/rules.md or use /rules add/remove commands.');
+            addAssistant('Edit rules in ~/.janex/rules.md or use /rules add/remove commands.');
           } else {
             addAssistant(
               'Usage: /rules add <rule> | /rules remove <n> | /rules clear | /rules edit'
@@ -2952,7 +2952,7 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
                     currentModel={config.model}
                     currentApiStyle={config.apiStyle}
                     onSubmit={(newBaseUrl, newApiKey, newModel, newApiStyle) => {
-                      const patch: Partial<JanexConfig> = {};
+                      const patch: Partial<janexConfig> = {};
                       const apiStyle = normalizeApiStyleInput(newApiStyle);
                       if (newBaseUrl) {
                         config.baseUrl = newBaseUrl;
@@ -3257,3 +3257,6 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
     </box>
   );
 }
+
+
+

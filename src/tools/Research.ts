@@ -54,7 +54,7 @@ export const researchTool: Tool = {
 
     const report = results.join('\n');
 
-    const outputDir = path.join(os.homedir(), '.Janex', 'research');
+    const outputDir = path.join(os.homedir(), '.janex', 'research');
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
     const filename = query.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50);
     const outputFile = path.join(outputDir, `${filename}-${Date.now()}.md`);
@@ -122,3 +122,4 @@ async function searchArxiv(query: string): Promise<string> {
     });
   });
 }
+

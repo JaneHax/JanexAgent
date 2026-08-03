@@ -1,10 +1,10 @@
 // @ts-nocheck
-import { AgentContext } from './context.js';
-import { JanexConfig } from './config.js';
+import { AgentContext } from './Context.js';
+import { JanexConfig } from './Config.js';
 import { ToolRegistry } from '../tools/index.js';
 import { SkillRegistry } from '../skills/registry.js';
 import { AgentMemory } from './memory.js';
-import { MultiAgentRouter } from './multi-agent.js';
+import { MultiAgentRouter } from './MultiAgent.js';
 import { logger } from '../utils/logger.js';
 import { withRetry, classifyError, shouldRetry } from '../utils/retry.js';
 import { onTaskStart, onTaskComplete, onTaskError } from './hooks/on-task.js';
@@ -269,3 +269,5 @@ export class JanexAgent {
     this.running = false;
   }
 }
+
+

@@ -4,7 +4,7 @@ import path from 'path';
 import os from 'os';
 import yaml from 'yaml';
 import { MCPClient, MCPServer } from './client.js';
-import { JanexConfig } from '../agent/config.js';
+import { JanexConfig } from '../agent/Config.js';
 
 const CONFIG_DIR = path.join(os.homedir(), '.janex');
 const SERVERS_FILE = path.join(CONFIG_DIR, 'mcp-servers.yaml');
@@ -104,3 +104,4 @@ export class MCPRegistry {
 }
 
 export const mcpRegistry = new MCPRegistry();
+

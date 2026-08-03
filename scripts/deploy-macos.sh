@@ -1,17 +1,5 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-echo "Deploying Janex on macOS..."
-
-if ! command -v node &> /dev/null; then
-  echo "Error: Node.js not found"
-  exit 1
-fi
-
-echo "Building..."
-npm run build
-
-echo "Linking..."
-npm link
-
-echo "macOS deploy complete!"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+exec "$SCRIPT_DIR/deploy.sh" "$@"

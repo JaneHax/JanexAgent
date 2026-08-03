@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { Tool } from './Registry.js';
 import { getCheckpointEngine } from '../agent/Checkpoint.js';
 

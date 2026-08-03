@@ -1,13 +1,12 @@
-// @ts-nocheck
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { randomUUID } from 'crypto';
-import { loadConfig, type JanexConfig } from '../agent/config.js';
+import { loadConfig, type janexConfig } from '../agent/Config.js';
 import type { Gateway } from '../gateway/Gateway.js';
 import type { Tool } from './Registry.js';
 
-type ImageConfig = NonNullable<JanexConfig['imageGeneration']>;
+type ImageConfig = NonNullable<janexConfig['imageGeneration']>;
 
 type ImagePayload = {
   data?: Buffer;
@@ -15,9 +14,9 @@ type ImagePayload = {
   mediaType?: string;
 };
 
-const IMAGE_OUTPUT_DIR = path.join(os.homedir(), '.Janex', 'generated-images');
+const IMAGE_OUTPUT_DIR = path.join(os.homedir(), '.janex', 'generated-images');
 
-export function hasImageGenerationConfig(config: JanexConfig): config is JanexConfig & {
+export function hasImageGenerationConfig(config: janexConfig): config is janexConfig & {
   imageGeneration: Required<Pick<ImageConfig, 'baseUrl' | 'apiKey' | 'format'>> & ImageConfig;
 } {
   const image = config.imageGeneration;
@@ -29,7 +28,7 @@ export function hasImageGenerationConfig(config: JanexConfig): config is JanexCo
   );
 }
 
-export function createImageGeneratorTool(config: JanexConfig, gateway: Gateway): Tool {
+export function createImageGeneratorTool(config: janexConfig, gateway: Gateway): Tool {
   return {
     name: 'image_generator',
     displayName: 'Image Generator',
@@ -106,7 +105,7 @@ export async function generateImageToFile(
     .replace('T', '-');
   const filePath = path.join(
     IMAGE_OUTPUT_DIR,
-    `Janex-image-${stamp}-${randomUUID().slice(0, 8)}${ext}`
+    `janex-image-${stamp}-${randomUUID().slice(0, 8)}${ext}`
   );
   fs.writeFileSync(filePath, data);
   return filePath;
@@ -289,3 +288,5 @@ function extensionForMediaType(mediaType: string): string {
   if (lower.includes('gif')) return '.gif';
   return '.png';
 }
+
+

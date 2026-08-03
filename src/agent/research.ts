@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { JanexConfig } from './config.js';
+import { JanexConfig } from './Config.js';
 import { ToolRegistry } from '../tools/index.js';
 
 export interface ResearchOptions {
@@ -264,3 +264,4 @@ export class ResearchPipeline {
     return output;
   }
 }
+

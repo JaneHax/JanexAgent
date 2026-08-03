@@ -5,11 +5,11 @@ import https from 'https';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PKG_NAME = 'Janex-ai';
+const PKG_NAME = 'janex-ai';
 
 function readCurrentVersion(): string {
-  // Preferred: launcher (bin/Janex.js) injects this at startup.
-  if (process.env.Janex_VERSION) return process.env.Janex_VERSION;
+  // Preferred: launcher (bin/janex.js) injects this at startup.
+  if (process.env.janex_VERSION) return process.env.janex_VERSION;
 
   // Fallback: walk up from this module to find package.json. Works in
   // source tree (src/utils/UpdateCheck.ts → 2 levels up) and in dist
@@ -17,7 +17,7 @@ function readCurrentVersion(): string {
   const candidates = [
     path.join(__dirname, '..', '..', 'package.json'),
     path.join(__dirname, '..', 'package.json'),
-    path.join(process.env.Janex_HOME || '', 'package.json'),
+    path.join(process.env.janex_HOME || '', 'package.json'),
   ];
   for (const p of candidates) {
     try {
@@ -31,7 +31,7 @@ function readCurrentVersion(): string {
 
 const CURRENT_VERSION = readCurrentVersion();
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
-const CACHE_FILE = path.join(os.homedir(), '.Janex', '.update-check.json');
+const CACHE_FILE = path.join(os.homedir(), '.janex', '.update-check.json');
 
 function parseSemver(v: string): [number, number, number] {
   const m = v.replace(/^v/, '').match(/^(\d+)\.(\d+)\.(\d+)/);
@@ -102,7 +102,7 @@ export async function checkForUpdate(): Promise<void> {
   if (!latest) return;
   if (!isNewer(latest, CURRENT_VERSION)) return;
 
-  // Box-drawing the banner to match Janex's setup UI style.
+  // Box-drawing the banner to match janex's setup UI style.
   const lines = [
     `\x1b[38;2;250;178;131mA new version of ${PKG_NAME} is available: \x1b[1m${CURRENT_VERSION}\x1b[22m → \x1b[38;2;127;216;143;1m${latest}\x1b[0m\x1b[38;2;250;178;131m`,
     `Run \x1b[38;2;157;124;216;1mnpm i -g ${PKG_NAME}@latest\x1b[22m to update.\x1b[0m`,
@@ -118,3 +118,4 @@ export async function checkForUpdate(): Promise<void> {
   console.log(`${border}╰${'─'.repeat(width)}╯\x1b[0m`);
   console.log();
 }
+

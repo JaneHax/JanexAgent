@@ -223,7 +223,7 @@ export function writeClipboard(text: string): void {
 export function readClipboardImage(): Promise<string | undefined> {
   return (async () => {
     const sp = nodeSpawn;
-    const tmpFile = `/tmp/Janex-paste-${Date.now()}.png`;
+    const tmpFile = `/tmp/janex-paste-${Date.now()}.png`;
     const env = xclipEnv();
     const fullEnv = env ? { ...process.env, ...env } : undefined;
 
@@ -253,7 +253,7 @@ return "ok"`;
     }
 
     if (isWindows) {
-      const tmpFileWin = path.join(os.tmpdir(), `Janex-paste-${Date.now()}.png`);
+      const tmpFileWin = path.join(os.tmpdir(), `janex-paste-${Date.now()}.png`);
       return new Promise<string | undefined>((resolve) => {
         const escapedPath = tmpFileWin.replace(/'/g, "''");
         const psScript = `Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $img = [System.Windows.Forms.Clipboard]::GetImage(); if ($null -ne $img) { $img.Save('${escapedPath}', [System.Drawing.Imaging.ImageFormat]::Png); [Console]::Out.Write('ok') }`;
@@ -304,3 +304,4 @@ return "ok"`;
     });
   })();
 }
+

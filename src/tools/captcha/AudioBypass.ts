@@ -2,7 +2,7 @@
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
-import { loadConfig } from '../../agent/config.js';
+import { loadConfig } from '../../agent/Config.js';
 import { transcribeAudioCaptchaLocal, transcribeAudioCaptchaWithGroq } from '../AudioCaptcha.js';
 
 export async function checkAudioButton(frame: any): Promise<boolean> {
@@ -144,7 +144,7 @@ export async function solveAudioCaptcha(
     _dbg(`Audio URL: ${audioUrl.substring(0, 100)}...`);
 
     // Step 3: Download audio file
-    const audioPath = join(homedir(), '.Janex-audio-challenge.mp3');
+    const audioPath = join(homedir(), '.janex-audio-challenge.mp3');
     _dbg('Downloading audio...');
 
     // Use page to download (respects proxy)
@@ -248,3 +248,5 @@ export async function solveAudioCaptcha(
     return { success: false };
   }
 }
+
+

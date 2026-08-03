@@ -1,7 +1,7 @@
 import type { ToolRegistry } from '../tools/Registry.js';
 import { safeDisplayText } from '../utils/terminal-sanitize.js';
 
-export type CommandSource = 'Janex' | 'claude-code' | 'opencode' | 'hermes' | 'skill' | 'plugin';
+export type CommandSource = 'janex' | 'claude-code' | 'opencode' | 'hermes' | 'skill' | 'plugin';
 
 export type CommandStatus = 'implemented' | 'agent-prompt' | 'not-implemented' | 'internal';
 
@@ -41,7 +41,7 @@ const baseCommands: SlashCommand[] = [
   {
     name: 'exit',
     aliases: ['quit', 'q'],
-    description: 'Exit Janex',
+    description: 'Exit janex',
     group: 'session',
     source: 'claude-code',
   },
@@ -55,7 +55,7 @@ const baseCommands: SlashCommand[] = [
     name: 'history',
     description: 'Show message count for the current context',
     group: 'session',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'history-search',
@@ -63,7 +63,7 @@ const baseCommands: SlashCommand[] = [
     argumentHint: '<query>',
     description: 'Search durable sessions, messages, and tool events',
     group: 'session',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'context',
@@ -82,7 +82,7 @@ const baseCommands: SlashCommand[] = [
     name: 'reset',
     description: 'Reset the agent loop and start a fresh context',
     group: 'session',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'model',
@@ -96,14 +96,14 @@ const baseCommands: SlashCommand[] = [
     argumentHint: '<low|medium|high|xhigh|max|ultra>',
     description: 'Set research depth and multi-agent intensity',
     group: 'model',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'multiagent',
     aliases: ['agents'],
-    description: 'Toggle native Janex multi-agent routing',
+    description: 'Toggle native janex multi-agent routing',
     group: 'agent',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'tools',
@@ -121,7 +121,7 @@ const baseCommands: SlashCommand[] = [
   },
   {
     name: 'skills',
-    description: 'List loaded Janex skills and skill categories',
+    description: 'List loaded janex skills and skill categories',
     argumentHint: '[search]',
     group: 'skills',
     source: 'claude-code',
@@ -130,14 +130,14 @@ const baseCommands: SlashCommand[] = [
     name: 'addskills',
     description: 'Enable Multiversal skill_loader tool (280+ skills)',
     group: 'skills',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'disable',
     argumentHint: '[tool-name]',
     description: 'Disable a tool to save tokens (e.g. /disable skill_loader)',
     group: 'tools',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'plugin',
@@ -158,31 +158,31 @@ const baseCommands: SlashCommand[] = [
     aliases: ['email'],
     description: 'Show Gmail/email connection status and setup hints',
     group: 'connect',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'discord',
     description: 'Connect Discord bot with token input',
     group: 'connect',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'telegram',
     description: 'Connect Telegram bot with token input',
     group: 'connect',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'whatsapp',
     description: 'Connect WhatsApp via QR code scan',
     group: 'connect',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'setup',
     description: 'Re-run interactive setup wizard',
     group: 'config',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'config',
@@ -207,19 +207,19 @@ const baseCommands: SlashCommand[] = [
   },
   {
     name: 'review',
-    description: 'Ask Janex to review the current repository',
+    description: 'Ask janex to review the current repository',
     group: 'workflows',
     source: 'claude-code',
   },
   {
     name: 'plan',
-    description: 'Ask Janex to produce an implementation plan first',
+    description: 'Ask janex to produce an implementation plan first',
     group: 'workflows',
     source: 'claude-code',
   },
   {
     name: 'diff',
-    description: 'Ask Janex to inspect current git diff',
+    description: 'Ask janex to inspect current git diff',
     group: 'workflows',
     source: 'claude-code',
   },
@@ -233,7 +233,7 @@ const baseCommands: SlashCommand[] = [
     name: 'vision',
     description: 'Configure/test Vision Fallback model for non-vision models and images',
     group: 'config',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'login',
@@ -259,28 +259,28 @@ const baseCommands: SlashCommand[] = [
     argumentHint: '[on|off]',
     description: 'Toggle browser window visibility (headed/headless)',
     group: 'config',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'gui',
     argumentHint: '[on|off]',
     description: 'Show/hide browser window for monitoring agent actions',
     group: 'config',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'skill',
     argumentHint: '[number|off|new <name>]',
     description: 'Limit additional skills or create a local skill scaffold',
     group: 'config',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'proxy',
     argumentHint: '[host:port|user:pass@host:port|off]',
     description: 'Set browser proxy for web automation',
     group: 'config',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'effort',
@@ -311,18 +311,18 @@ const baseCommands: SlashCommand[] = [
     name: 'deep',
     description: 'Toggle deep research mode (max depth + multi-agent)',
     group: 'model',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'deep-research',
     argumentHint: '<topic>',
     description: 'Run comprehensive multi-agent research pipeline on a topic',
     group: 'model',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'init',
-    description: 'Generate Janex.md project context file',
+    description: 'Generate janex.md project context file',
     group: 'session',
     source: 'claude-code',
   },
@@ -393,14 +393,14 @@ const baseCommands: SlashCommand[] = [
     argumentHint: '[add|remove|clear|edit]',
     description: 'Manage session rules for this conversation',
     group: 'session',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'todo',
     argumentHint: '[add|done|list|clear]',
     description: 'Manage file-backed todos for this project',
     group: 'agent',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'fork',
@@ -431,7 +431,7 @@ const baseCommands: SlashCommand[] = [
     name: 'insights',
     description: 'Show learned workflow patterns and skill candidates',
     group: 'workflows',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'debug',
@@ -706,28 +706,28 @@ const baseCommands: SlashCommand[] = [
     argumentHint: '[list|add|run|remove]',
     description: 'Manage scheduled tasks and automations',
     group: 'tools',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'evals',
     argumentHint: '[latest|session <id>|job <id>]',
     description: 'Score recent agent runs using observer events and evidence',
     group: 'session',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'replay',
     argumentHint: '[latest|session <id>|job <id>]',
     description: 'Replay observer timeline for a session or agent job',
     group: 'session',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'trash',
     argumentHint: '[list|recover <id>]',
     description: 'List and recover deleted files/folders within the 5-chat recovery window',
     group: 'tools',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'curator',
@@ -758,7 +758,7 @@ const baseCommands: SlashCommand[] = [
     argumentHint: '[show|edit|path]',
     description: 'Show, edit, or print the canonical SOUL.md path',
     group: 'config',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'reload-mcp',
@@ -802,7 +802,7 @@ const baseCommands: SlashCommand[] = [
     argumentHint: '[tools]',
     description: 'Show token usage or learned tool usage stats',
     group: 'session',
-    source: 'Janex',
+    source: 'janex',
   },
   {
     name: 'platforms',
@@ -830,7 +830,7 @@ const baseCommands: SlashCommand[] = [
   },
   {
     name: 'update',
-    description: 'Update Janex Agent to the latest version',
+    description: 'Update janex Agent to the latest version',
     group: 'session',
     source: 'hermes',
   },
@@ -949,7 +949,7 @@ export function createSlashCommands(
         name: `tool:${tool.name}`,
         description: sanitize(tool.description),
         group: 'tools',
-        source: 'Janex',
+        source: 'janex',
         status: 'implemented',
       })
     );
@@ -1052,3 +1052,4 @@ export function formatCommandHelp(commands: SlashCommand[]): string {
     })
     .join('\n\n');
 }
+

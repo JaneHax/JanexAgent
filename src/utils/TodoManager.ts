@@ -7,13 +7,13 @@ export interface TodoItem {
   done: boolean;
 }
 
-const Janex_MD_PATH = join(process.cwd(), 'Janex.md');
+const janex_MD_PATH = join(process.cwd(), 'janex.md');
 
 export function loadTodos(): TodoItem[] {
-  if (!existsSync(Janex_MD_PATH)) return [];
+  if (!existsSync(janex_MD_PATH)) return [];
   
   try {
-    const content = readFileSync(Janex_MD_PATH, 'utf-8');
+    const content = readFileSync(janex_MD_PATH, 'utf-8');
     const todoSection = content.match(/## Todos\n([\s\S]*?)(?=\n##|$)/);
     if (!todoSection) return [];
     
@@ -40,16 +40,16 @@ export function loadTodos(): TodoItem[] {
 export function saveTodos(todos: TodoItem[]): void {
   let content = '';
   
-  if (existsSync(Janex_MD_PATH)) {
-    content = readFileSync(Janex_MD_PATH, 'utf-8');
+  if (existsSync(janex_MD_PATH)) {
+    content = readFileSync(janex_MD_PATH, 'utf-8');
     // Remove existing Todos section
     content = content.replace(/## Todos\n[\s\S]*?(?=\n##|$)/, '');
   } else {
-    content = '# Janex Session\n\n';
+    content = '# janex Session\n\n';
   }
   
   if (todos.length === 0) {
-    writeFileSync(Janex_MD_PATH, content.trim() + '\n', 'utf-8');
+    writeFileSync(janex_MD_PATH, content.trim() + '\n', 'utf-8');
     return;
   }
   
@@ -57,7 +57,7 @@ export function saveTodos(todos: TodoItem[]): void {
     `${t.id}. [${t.done ? 'x' : ' '}] ${t.text}`
   ).join('\n') + '\n';
   
-  writeFileSync(Janex_MD_PATH, content.trim() + '\n\n' + todoSection, 'utf-8');
+  writeFileSync(janex_MD_PATH, content.trim() + '\n\n' + todoSection, 'utf-8');
 }
 
 export function addTodo(text: string): TodoItem {
@@ -85,3 +85,4 @@ export function getTodoStats(): { done: number; total: number } {
     total: todos.length
   };
 }
+

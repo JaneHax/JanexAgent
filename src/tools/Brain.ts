@@ -1,16 +1,16 @@
 import type { Tool } from './Registry.js';
-import type { JanexBrain } from '../brain/JanexBrain.js';
+import type { janexBrain } from '../brain/JanexBrain.js';
 
-let currentBrain: JanexBrain | undefined;
+let currentBrain: janexBrain | undefined;
 
-export function setBrainInstance(brain: JanexBrain): void {
+export function setBrainInstance(brain: janexBrain): void {
   currentBrain = brain;
 }
 
 export const brainTool: Tool = {
   name: 'brain',
   description:
-    'Inspect Janex Brain context: model capabilities, repo index summary/search, and transient scratchpad.',
+    'Inspect janex Brain context: model capabilities, repo index summary/search, and transient scratchpad.',
   parameters: {
     type: 'object',
     properties: {
@@ -47,3 +47,5 @@ export const brainTool: Tool = {
     }
   },
 };
+
+

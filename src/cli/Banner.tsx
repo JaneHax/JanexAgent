@@ -23,7 +23,7 @@ export function Banner({ model, provider, version = '0.1.0', toolCount = 0, skil
       </box>
 
       <box marginTop={1}>
-        <text fg={theme.primary} attributes={TextAttributes.BOLD}>Janex</text>
+        <text fg={theme.primary} attributes={TextAttributes.BOLD}>janex</text>
         <text fg={theme.text}> AGENTIC AI</text>
         <text fg={theme.accent}>{'  ::  '}</text>
         <text fg={theme.textMuted}>terminal autonomy workspace</text>
@@ -56,3 +56,5 @@ export function Banner({ model, provider, version = '0.1.0', toolCount = 0, skil
 function asciiLogoText(): string {
   return logoLines().join('\n');
 }
+
+

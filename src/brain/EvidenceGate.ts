@@ -1,4 +1,4 @@
-// @ts-nocheck
+import type { EvidenceItem } from '../agent/SessionStore.js';
 import type { BrainScratchpadState, BrainToolResult, EvidenceGateDecision } from './types.js';
 
 const MUTATION_TOOLS = new Set([

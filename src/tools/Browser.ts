@@ -22,7 +22,7 @@ import {
 } from 'fs';
 import sharp from 'sharp';
 import type { Tool } from './Registry.js';
-import { loadConfig } from '../agent/config.js';
+import { loadConfig } from '../agent/Config.js';
 import { Metrics } from '../agent/Metrics.js';
 import { BrowserLaunchTracker } from './BrowserLaunchTracker.js';
 import { formatFormAssistResult, runFormAssist } from './forms/FormIntelligence.js';
@@ -86,7 +86,7 @@ const RESEARCH_SKILL_DIR = join(
 
 let _lastActionScreenshot = '';
 async function autoScreenshot(p: Page, label: string): Promise<string> {
-  const path = join(homedir(), '.Janex', 'last-action.png');
+  const path = join(homedir(), '.janex', 'last-action.png');
   try {
     await p.screenshot({ path });
     _lastActionScreenshot = path;
@@ -181,7 +181,7 @@ let lastEvalCode = '';
 let browserHeadless = process.env.BROWSER_HEADLESS !== 'false';
 let browserProxy = process.env.BROWSER_PROXY || '';
 let browserCdpEndpoint =
-  process.env.Janex_BROWSER_CDP_ENDPOINT ||
+  process.env.janex_BROWSER_CDP_ENDPOINT ||
   process.env.BROWSER_CDP_ENDPOINT ||
   process.env.BROWSER_CDP_URL ||
   '';
@@ -204,7 +204,7 @@ async function closeAllSessions(): Promise<void> {
   for (const [key, session] of sessions) {
     session.cdpSession = undefined;
     if (session.mode === 'cdp') {
-      await session.cdpBrowser?.close({ reason: 'Janex browser CDP disconnect' }).catch(() => {});
+      await session.cdpBrowser?.close({ reason: 'janex browser CDP disconnect' }).catch(() => {});
     } else {
       await session.context.close().catch(() => {});
     }
@@ -307,7 +307,7 @@ async function resolveGeoForProxy(proxyStr: string): Promise<GeoInfo> {
   return await lookupGeo(host);
 }
 
-const BASE_PROFILE_DIR = join(homedir(), '.Janex-browser-profile');
+const BASE_PROFILE_DIR = join(homedir(), '.janex-browser-profile');
 
 function getProfileDir(sessionKey = currentSessionKey): string {
   if (
@@ -737,7 +737,7 @@ async function closeBrowser(): Promise<void> {
   if (session) {
     session.cdpSession = undefined;
     if (session.mode === 'cdp') {
-      await session.cdpBrowser?.close({ reason: 'Janex browser CDP disconnect' }).catch(() => {});
+      await session.cdpBrowser?.close({ reason: 'janex browser CDP disconnect' }).catch(() => {});
     } else {
       await session.context.close().catch(() => {});
     }
@@ -866,7 +866,7 @@ async function resolveLocator(p: Page, target: string) {
 
 export const browserTool: Tool = {
   name: 'browser',
-  description: `Persistent Chromium browser. Profile: ~/.Janex-browser-profile.
+  description: `Persistent Chromium browser. Profile: ~/.janex-browser-profile.
 
 # HARD RULES — VIOLATE THESE AND YOU FAIL
 1. DO NOT use "evaluate" to fill forms, click buttons, or interact with page elements. Use fill, click, type, signup-assist, signin-assist instead. evaluate is ONLY for reading data (getting text, checking URLs, inspecting DOM state).
@@ -909,7 +909,7 @@ Config: connect-cdp, disconnect-cdp, cdp-status, set-proxy, set-ui, status, clos
 # hCaptcha accessibility cookie
 - If hCaptcha shows an image challenge, cookie hc_accessibility is missing/expired.
 - Ask user for cookie value, then: action="set-hcaptcha-a11y" value="<cookie value>"
-- Cookie is stored in ~/.Janex/hcaptcha-a11y.json and injected into ~/.Janex-browser-profile (~12h TTL).
+- Cookie is stored in ~/.janex/hcaptcha-a11y.json and injected into ~/.janex-browser-profile (~12h TTL).
 - action="hcaptcha-a11y-status" to check TTL.
 
 Target: CSS (#id, .class, [attr]), text="...", role=button, placeholder="...", label="...", or plain text.
@@ -1264,7 +1264,7 @@ except Exception as e:
             return `Browser: not running. Use action "navigate" to start it.\nEngine: Chromium\nProfile: ${BASE_PROFILE_DIR}\nMode: ${browserHeadless ? 'headless' : 'headed'}\nProxy: ${browserProxy || 'none'}\nCDP: ${configuredCdp ? `configured (${configuredCdp})` : 'not configured'}`;
           }
           const title = await session.page.title();
-          return `Browser: running\nEngine: Chromium\nProfile: ${session.profileDir}\nMode: ${session.mode === 'cdp' ? 'cdp-attached' : browserHeadless ? 'headless' : 'headed'}\nProxy: ${session.mode === 'cdp' ? 'external browser controls proxy' : browserProxy || 'none'}\nCDP: ${session.cdpEndpoint || configuredCdp || 'none'}\nURL: ${session.page.url()}\nTitle: ${title}\nOpen tabs: ${session.context.pages().length}\nJanex Uptime: ${Metrics.getUptimeFormatted()}`;
+          return `Browser: running\nEngine: Chromium\nProfile: ${session.profileDir}\nMode: ${session.mode === 'cdp' ? 'cdp-attached' : browserHeadless ? 'headless' : 'headed'}\nProxy: ${session.mode === 'cdp' ? 'external browser controls proxy' : browserProxy || 'none'}\nCDP: ${session.cdpEndpoint || configuredCdp || 'none'}\nURL: ${session.page.url()}\nTitle: ${title}\nOpen tabs: ${session.context.pages().length}\njanex Uptime: ${Metrics.getUptimeFormatted()}`;
         }
 
         case 'close': {
@@ -1600,7 +1600,7 @@ except Exception as e:
 
         case 'state': {
           const p = await ensureBrowser();
-          const screenshotPath = options.path || join(homedir(), '.Janex', 'browser-state.png');
+          const screenshotPath = options.path || join(homedir(), '.janex', 'browser-state.png');
           await p
             .screenshot({ path: screenshotPath, fullPage: !!options.fullPage })
             .catch(() => {});
@@ -1653,7 +1653,7 @@ except Exception as e:
 
         case 'screenshot': {
           const p = await ensureBrowser();
-          const screenshotPath = options.path || join(homedir(), '.Janex', 'screenshot.png');
+          const screenshotPath = options.path || join(homedir(), '.janex', 'screenshot.png');
           if (target) {
             const locator = await resolveLocator(p, target);
             await locator.first().screenshot({ path: screenshotPath });
@@ -1959,7 +1959,7 @@ except Exception as e:
             return ok('hc_accessibility saved + injected into browser profile', {
               ttl: `${Math.floor(ttl / 3600)}h ${ttl % 3600}s`,
               inject: injectMsg,
-              path: '~/.Janex/hcaptcha-a11y.json',
+              path: '~/.janex/hcaptcha-a11y.json',
             });
           } catch (e: any) {
             return err(`set-hcaptcha-a11y failed: ${e.message}`);
@@ -2537,7 +2537,7 @@ except Exception as e:
               results.push(`Detected ${captchaType} challenge. Analyzing...`);
               if (captchaType === 'geetest') {
                 results.push(await solveGeetestSlider(p));
-                const screenshotPath = join(homedir(), '.Janex', 'captcha-after.png');
+                const screenshotPath = join(homedir(), '.janex', 'captcha-after.png');
                 await p.screenshot({ path: screenshotPath });
                 results.push(`\nPost-attempt screenshot: ${screenshotPath}`);
                 return results.join('\n');
@@ -2555,7 +2555,7 @@ except Exception as e:
                 const puzzleEl = targetFrame
                   .locator('.geetest_panel, .geetest_widget, [class*="geetest_container"]')
                   .first();
-                const screenshotPath = join(homedir(), '.Janex', 'slider-puzzle.png');
+                const screenshotPath = join(homedir(), '.janex', 'slider-puzzle.png');
                 try {
                   if ((await puzzleEl.count()) > 0)
                     await puzzleEl.screenshot({ path: screenshotPath });
@@ -2753,7 +2753,7 @@ except Exception as e:
               );
               if ((await imgCaptcha.count()) > 0) {
                 results.push('Text-based captcha detected.');
-                const screenshotPath = join(homedir(), '.Janex', 'captcha-challenge.png');
+                const screenshotPath = join(homedir(), '.janex', 'captcha-challenge.png');
                 await imgCaptcha.first().screenshot({ path: screenshotPath });
                 results.push(`Captcha image saved: ${screenshotPath}`);
 
@@ -2795,14 +2795,14 @@ except Exception as e:
                 }
               } else {
                 results.push('No recognizable captcha. Taking screenshot and scanning...');
-                const screenshotPath = join(homedir(), '.Janex', 'captcha-challenge.png');
+                const screenshotPath = join(homedir(), '.janex', 'captcha-challenge.png');
                 await p.screenshot({ path: screenshotPath });
                 results.push(`Screenshot saved: ${screenshotPath}`);
                 results.push('Use "captcha-grid" to scan for any challenge overlay.');
               }
             }
 
-            const screenshotPath = join(homedir(), '.Janex', 'captcha-after.png');
+            const screenshotPath = join(homedir(), '.janex', 'captcha-after.png');
             await p.screenshot({ path: screenshotPath });
             results.push(`\nPost-attempt screenshot: ${screenshotPath}`);
             return results.join('\n');
@@ -3056,7 +3056,7 @@ except Exception as e:
             }
             await p.waitForTimeout(3000);
 
-            const screenshotPath = join(homedir(), '.Janex', 'captcha-verify-result.png');
+            const screenshotPath = join(homedir(), '.janex', 'captcha-verify-result.png');
 
             const errorEl2 = challengeFrame
               .locator('.rc-imageselect-incorrect-response, .error-message, .incorrect')
@@ -3236,7 +3236,7 @@ except Exception as e:
               '.geetest_panel, .geetest_widget, [class*="geetest_container"], [class*="slider_container"]'
             )
             .first();
-          const screenshotPath = join(homedir(), '.Janex', 'slider-puzzle.png');
+          const screenshotPath = join(homedir(), '.janex', 'slider-puzzle.png');
           try {
             if ((await puzzleEl.count()) > 0) {
               await puzzleEl.screenshot({ path: screenshotPath });
@@ -3852,7 +3852,7 @@ except Exception as e:
           results.push(`URL: ${p.url()}`);
           results.push(`Title: ${await p.title()}`);
 
-          const screenshotPath = join(homedir(), '.Janex', 'signup-result.png');
+          const screenshotPath = join(homedir(), '.janex', 'signup-result.png');
           await p.screenshot({ path: screenshotPath });
           results.push(`Screenshot: ${screenshotPath}`);
 
@@ -4131,7 +4131,7 @@ except Exception as e:
           results.push(`URL: ${p.url()}`);
           results.push(`Title: ${await p.title()}`);
 
-          const screenshotPath = join(homedir(), '.Janex', 'signin-result.png');
+          const screenshotPath = join(homedir(), '.janex', 'signin-result.png');
           await p.screenshot({ path: screenshotPath });
           results.push(`Screenshot: ${screenshotPath}`);
 
@@ -4244,7 +4244,7 @@ except Exception as e:
             await p.mouse.up();
             await p.waitForTimeout(400 + Math.random() * 300);
 
-            const screenshotPath = join(homedir(), '.Janex', 'drag-result.png');
+            const screenshotPath = join(homedir(), '.janex', 'drag-result.png');
             await p.screenshot({ path: screenshotPath });
 
             return ok(`Dragged "${target}" to (${Math.round(endX)}, ${Math.round(endY)})`, {
@@ -4283,7 +4283,7 @@ except Exception as e:
             await humanHold(x, y, duration, p);
             await p.waitForTimeout(300 + Math.random() * 400);
 
-            const screenshotPath = join(homedir(), '.Janex', 'hold-result.png');
+            const screenshotPath = join(homedir(), '.janex', 'hold-result.png');
             await p.screenshot({ path: screenshotPath });
 
             return ok(`Held click on "${target}" for ${Math.round(duration)}ms (human-like)`, {
@@ -4377,3 +4377,6 @@ except Exception as e:
     }
   },
 };
+
+
+

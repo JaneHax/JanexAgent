@@ -43,9 +43,9 @@ KEYCHAIN_KEYS = (
     "AUTH_TOKEN", "CT0", "BSKY_HANDLE", "BSKY_APP_PASSWORD",
     "TRUTHSOCIAL_TOKEN", "BRAVE_API_KEY", "EXA_API_KEY", "SERPER_API_KEY",
     "OPENROUTER_API_KEY", "PARALLEL_API_KEY", "XQUIK_API_KEY",
-    "XIAOHONGSHU_API_BASE", "AURIX_REDDIT_RELAY_URL",
-    "AURIX_REDDIT_RELAY_TOKEN", "AURIX_REDDIT_BACKEND",
-    "AURIX_REDDIT_RELAY_STRICT", "AURIX_REDDIT_RELAY_TIMEOUT_SECONDS",
+    "XIAOHONGSHU_API_BASE", "janex_REDDIT_RELAY_URL",
+    "janex_REDDIT_RELAY_TOKEN", "janex_REDDIT_BACKEND",
+    "janex_REDDIT_RELAY_STRICT", "janex_REDDIT_RELAY_TIMEOUT_SECONDS",
     "REDDIT_RELAY_URL", "REDDIT_RELAY_TOKEN",
 )
 
@@ -340,11 +340,11 @@ def get_config() -> dict[str, Any]:
         ('EXCLUDE_SOURCES', ''),
         ('LAST30DAYS_YOUTUBE_SSH_HOST', None),
         ('LAST30DAYS_TRANSCRIPT_TIMEOUT', None),
-        ('AURIX_REDDIT_RELAY_URL', None),
-        ('AURIX_REDDIT_RELAY_TOKEN', None),
-        ('AURIX_REDDIT_BACKEND', 'auto'),
-        ('AURIX_REDDIT_RELAY_STRICT', None),
-        ('AURIX_REDDIT_RELAY_TIMEOUT_SECONDS', None),
+        ('janex_REDDIT_RELAY_URL', None),
+        ('janex_REDDIT_RELAY_TOKEN', None),
+        ('janex_REDDIT_BACKEND', 'auto'),
+        ('janex_REDDIT_RELAY_STRICT', None),
+        ('janex_REDDIT_RELAY_TIMEOUT_SECONDS', None),
         ('REDDIT_RELAY_URL', None),
         ('REDDIT_RELAY_TOKEN', None),
     ]
@@ -362,11 +362,11 @@ def get_config() -> dict[str, Any]:
         if legacy:
             config['SCRAPECREATORS_API_KEY'] = legacy
 
-    if not config.get('AURIX_REDDIT_RELAY_URL'):
-        config['AURIX_REDDIT_RELAY_URL'] = config.get('REDDIT_RELAY_URL')
-    if not config.get('AURIX_REDDIT_RELAY_TOKEN'):
-        config['AURIX_REDDIT_RELAY_TOKEN'] = config.get('REDDIT_RELAY_TOKEN')
-    config['AURIX_REDDIT_BACKEND'] = (config.get('AURIX_REDDIT_BACKEND') or 'auto').lower()
+    if not config.get('janex_REDDIT_RELAY_URL'):
+        config['janex_REDDIT_RELAY_URL'] = config.get('REDDIT_RELAY_URL')
+    if not config.get('janex_REDDIT_RELAY_TOKEN'):
+        config['janex_REDDIT_RELAY_TOKEN'] = config.get('REDDIT_RELAY_TOKEN')
+    config['janex_REDDIT_BACKEND'] = (config.get('janex_REDDIT_BACKEND') or 'auto').lower()
 
     # Multi-key rotation: comma-separated SCRAPECREATORS_API_KEY round-robins
     # via random.choice per run. Originally added in #268, accidentally dropped
@@ -487,10 +487,10 @@ def get_reddit_source(config: dict[str, Any]) -> str | None:
 
     Returns: 'relay', 'scrapecreators', 'keyless', 'off', or None.
     """
-    backend = (config.get('AURIX_REDDIT_BACKEND') or 'auto').lower()
+    backend = (config.get('janex_REDDIT_BACKEND') or 'auto').lower()
     if backend in {'off', 'keyless', 'scrapecreators'}:
         return backend
-    if config.get('AURIX_REDDIT_RELAY_URL') and backend in {'auto', 'relay'}:
+    if config.get('janex_REDDIT_RELAY_URL') and backend in {'auto', 'relay'}:
         return 'relay'
     if backend == 'relay':
         return 'relay'
@@ -765,3 +765,4 @@ def is_xquik_available(config: dict[str, Any]) -> bool:
 def get_xquik_token(config: dict[str, Any]) -> str:
     """Get Xquik API key."""
     return config.get('XQUIK_API_KEY') or ''
+

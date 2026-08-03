@@ -38,32 +38,32 @@ export const codeExecTool: Tool = {
     switch (language) {
       case 'python':
       case 'py':
-        file = path.join(tmpDir, `Janex_${stamp}.py`);
+        file = path.join(tmpDir, `janex_${stamp}.py`);
         fs.writeFileSync(file, code);
         cmd = process.platform === 'win32' ? `python ${file}` : `python3 ${file} 2>/dev/null || python ${file}`;
         break;
       case 'node':
       case 'js':
       case 'javascript':
-        file = path.join(tmpDir, `Janex_${stamp}.js`);
+        file = path.join(tmpDir, `janex_${stamp}.js`);
         fs.writeFileSync(file, code);
         cmd = `node ${file}`;
         break;
       case 'bash':
       case 'sh':
         if (process.platform === 'win32') {
-          file = path.join(tmpDir, `Janex_${stamp}.bat`);
+          file = path.join(tmpDir, `janex_${stamp}.bat`);
           fs.writeFileSync(file, code);
           cmd = `cmd /c "${file}"`;
         } else {
-          file = path.join(tmpDir, `Janex_${stamp}.sh`);
+          file = path.join(tmpDir, `janex_${stamp}.sh`);
           fs.writeFileSync(file, code);
           cmd = `bash ${file}`;
         }
         break;
       case 'powershell':
       case 'ps1':
-        file = path.join(tmpDir, `Janex_${stamp}.ps1`);
+        file = path.join(tmpDir, `janex_${stamp}.ps1`);
         fs.writeFileSync(file, code);
         cmd = process.platform === 'win32'
           ? `powershell -ExecutionPolicy Bypass -File "${file}"`
@@ -88,3 +88,4 @@ export const codeExecTool: Tool = {
     });
   },
 };
+

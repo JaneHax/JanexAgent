@@ -3,7 +3,7 @@ import path from 'path';
 import os from 'os';
 import type { Tool } from '../tools/Registry.js';
 
-const MCP_CONFIG_DIR = path.join(os.homedir(), '.Janex', 'mcp');
+const MCP_CONFIG_DIR = path.join(os.homedir(), '.janex', 'mcp');
 const MCP_CONFIG_FILE = path.join(MCP_CONFIG_DIR, 'servers.json');
 
 export interface McpServerConfig {
@@ -238,7 +238,7 @@ export const mcpManageTool: Tool = {
         const preset = PRESET_SERVERS[name];
         if (preset) {
           addMcpServer({ name, ...preset, enabled: true });
-          return `Added MCP server: ${name}\n${preset.description}\n\n${preset.env ? 'Set environment variables:\n' + Object.entries(preset.env).map(([k, v]) => `  export ${k}="${v}"`).join('\n') : ''}\n\nRestart Janex to connect.`;
+          return `Added MCP server: ${name}\n${preset.description}\n\n${preset.env ? 'Set environment variables:\n' + Object.entries(preset.env).map(([k, v]) => `  export ${k}="${v}"`).join('\n') : ''}\n\nRestart janex to connect.`;
         }
 
         const command = args.command as string;
@@ -270,3 +270,4 @@ export const mcpManageTool: Tool = {
     }
   },
 };
+

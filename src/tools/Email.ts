@@ -129,7 +129,7 @@ async function tryMsmtp(
   const headers = [
     `To: ${to}`,
     `Subject: ${subject}`,
-    `From: ${process.env.Janex_EMAIL || 'Janex@agent'}`,
+    `From: ${process.env.janex_EMAIL || 'janex@agent'}`,
     cc ? `Cc: ${cc}` : '',
     'Content-Type: text/plain; charset=UTF-8',
     '',
@@ -266,3 +266,4 @@ function runWithStdin(
     child.stdin?.end(input);
   });
 }
+

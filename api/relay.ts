@@ -1,5 +1,5 @@
 import http from 'http';
-import { JanexConfig } from '../agent/config.js';
+import { JanexConfig } from '../agent/Config.js';
 import { JanexAgent } from '../agent/agent.js';
 import { AgentContext } from '../agent/context.js';
 import { toolRegistry } from '../src/tools/index.js';
@@ -62,3 +62,5 @@ async function loadConfig(): Promise<JanexConfig> {
   const { loadConfig } = await import('./agent/config.js');
   return loadConfig();
 }
+
+

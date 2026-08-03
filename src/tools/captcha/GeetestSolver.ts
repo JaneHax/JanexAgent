@@ -6,7 +6,7 @@ import sharp from 'sharp';
 import { humanMove } from './common.js';
 
 const PIXELS_EXTENSION = 10;
-const DEBUG_DIR = join(homedir(), '.Janex');
+const DEBUG_DIR = join(homedir(), '.janex');
 
 type Rect = { left: number; top: number; width: number; height: number };
 
@@ -778,3 +778,4 @@ export async function solveGeetestSlider(page: Page): Promise<string> {
   results.push(`Screenshot: ${screenshot}`);
   return results.join('\n');
 }
+

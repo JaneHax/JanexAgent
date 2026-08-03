@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { loadConfig, saveConfig, getConfigDir } from '../src/agent/config.ts';
+import { loadConfig, saveConfig, getConfigDir } from '../src/agent/Config.js';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
@@ -15,8 +15,8 @@ describe('Config', () => {
 
   it('should return default config when no file exists', async () => {
     const config = await loadConfig();
-    expect(config.provider).toBe('custom');
-    expect(config.model).toBe('llama3.2');
+    expect(config.provider).toBe('openai');
+    expect(config.model).toBe('gpt-4o');
     expect(config.researchMode).toBe('low');
   });
 
@@ -43,3 +43,5 @@ describe('Config', () => {
     expect(loaded.researchMode).toBe('high');
   });
 });
+
+

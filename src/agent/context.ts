@@ -1,65 +1,19 @@
-// @ts-nocheck
 import os from 'os';
-import type { JanexConfig } from './config.js';
+import type { janexConfig } from './Config.js';
 import type { Tool } from '../tools/Registry.js';
 import { loadAgentsMD, type AgentsMD } from './AgentsMD.js';
 import { MemoryEngine } from './MemoryEngine.js';
 import { loadSoul } from './Soul.js';
 import { STRUCTURED_OUTPUT_PROMPT } from '../utils/StructuredOutputFormat.js';
 
-export class AgentContext {
-  private sessionId: string;
-  private messages: Array<{ role: string; content: string; timestamp: number }>;
-  private maxMessages: number;
-  private createdAt: number;
-
-  constructor(sessionId?: string, maxMessages = Infinity) {
-    this.sessionId = sessionId || `session_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-    this.messages = [];
-    this.maxMessages = maxMessages;
-    this.createdAt = Date.now();
-  }
-
-  getSessionId(): string {
-    return this.sessionId;
-  }
-
-  addMessage(message: { role: string; content: string }): void {
-    this.messages.push({
-      ...message,
-      timestamp: Date.now()
-    });
-    while (this.messages.length > this.maxMessages) {
-      this.messages.shift();
-    }
-  }
-
-  getMessages(): Array<{ role: string; content: string; timestamp: number }> {
-    return [...this.messages];
-  }
-
-  clear(): void {
-    this.messages = [];
-  }
-
-  reset(): void {
-    this.sessionId = `session_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-    this.messages = [];
-    this.createdAt = Date.now();
-  }
-
-  getTokenCount(): number {
-    return this.messages.reduce((sum, m) => sum + Math.ceil(m.content.length / 4), 0);
-  }
-}
-
 export interface BuildSystemPromptDependencies {
   loadSoulContent?: () => string;
   loadAgents?: (projectDir?: string) => AgentsMD;
   loadMemorySummary?: () => string;
 }
+
 export function buildSystemPrompt(
-  config: JanexConfig,
+  config: janexConfig,
   tools: Tool[],
   deps: BuildSystemPromptDependencies = {},
 ): string {
@@ -84,10 +38,10 @@ export function buildSystemPrompt(
 
   const sections: string[] = [];
 
-  sections.push(`You are Janex Agent — a senior-level AI engineer running in the user's terminal.
+  sections.push(`You are janex Agent — a senior-level AI engineer running in the user's terminal.
 
 # Identity
-- Name: Janex
+- Name: janex
 - You are a direct, action-oriented engineer that executes immediately.
 
 # Response Contract — direct first
@@ -148,10 +102,10 @@ NEVER run \`terminal\` commands for tasks that have a dedicated tool:
 If you catch yourself typing \`find\`, \`grep\`, \`ls\`, \`cat\` — STOP and use the dedicated tool instead. Violating this wastes the user's time with "access denied" spam.`);
   } else if (platform === 'darwin') {
     sections.push(`# Platform: macOS — command reference
-Prefer BSD-flavored commands. Use \`gfind\`/\`gstat\` for GNU variants if needed. Always prefer dedicated Janex tools (\`search_files\`, \`read_file\`, \`write_file\`, \`file_edit\`, \`glob\`) over shelling out.`);
+Prefer BSD-flavored commands. Use \`gfind\`/\`gstat\` for GNU variants if needed. Always prefer dedicated janex tools (\`search_files\`, \`read_file\`, \`write_file\`, \`file_edit\`, \`glob\`) over shelling out.`);
   } else {
     sections.push(`# Platform: Linux — command reference
-Standard GNU coreutils available. Always prefer dedicated Janex tools (\`search_files\`, \`read_file\`, \`write_file\`, \`file_edit\`, \`glob\`) over shelling out. If \`rg\` is not installed, fall back to \`grep -R\` or \`find\`.`);
+Standard GNU coreutils available. Always prefer dedicated janex tools (\`search_files\`, \`read_file\`, \`write_file\`, \`file_edit\`, \`glob\`) over shelling out. If \`rg\` is not installed, fall back to \`grep -R\` or \`find\`.`);
   }
 
   sections.push(`# Available tools\n${toolList}\n\nUse tools only when they provide missing evidence or perform the requested action. Do not call a tool just because it exists. For short chat, explanations, or obvious answers, answer without tools.`);
@@ -170,7 +124,7 @@ AUTH_TOKEN="their_auth_token_here"
 CT0="their_ct0_cookie_here"
 3. Confirm to the user that the cookies are saved and the skill is now authenticated.`);
 
-  sections.push(`You are Janex Programming Assistant — a helpful coding assistant.
+  sections.push(`You are janex Programming Assistant — a helpful coding assistant.
 
 ## Programming Assistant Mode
 
@@ -372,7 +326,7 @@ Important:
 - Match the language used in the user's current message unless they explicitly request another language.
 - For chat/filler: skip generic acknowledgements and answer directly.
 - After completing a task: give a summary of what changed and why, not a silent finish.
-- For document generation (reports, journals, emails): Write like a skilled human — varied sentences, natural flow. NEVER start with "In today's fast-paced world", "In the realm of", etc. NEVER overuse "Additionally", "Furthermore", "Moreover". NEVER add "Generated by Janex" or AI attribution.
+- For document generation (reports, journals, emails): Write like a skilled human — varied sentences, natural flow. NEVER start with "In today's fast-paced world", "In the realm of", etc. NEVER overuse "Additionally", "Furthermore", "Moreover". NEVER add "Generated by janex" or AI attribution.
 - When referencing specific functions or pieces of code include the pattern file_path:line_number.
 - When referencing GitHub issues or pull requests, use the owner/repo#123 format.
 
@@ -518,7 +472,7 @@ Messages may include a [sent from <platform>] tag. When you see this:
 - Never ask "allow once?" or show yes/no permission dialogs — just execute.
 - Adapt your response format to the platform:
   - **discord**: Supports markdown, code blocks, embeds. 2000 char limit per message. Use compact markdown pipe tables for structured comparisons and dense data when they fit.
-  - **telegram**: Supports HTML output through Janex's renderer. Use compact markdown pipe tables for structured comparisons and dense data; Janex will render them into aligned monospace tables for mobile chat.
+  - **telegram**: Supports HTML output through janex's renderer. Use compact markdown pipe tables for structured comparisons and dense data; janex will render them into aligned monospace tables for mobile chat.
   - **whatsapp**: NO markdown tables and NO box-drawing/ASCII tables. Use *bold*, _italic_, plain text. Keep it concise. Use bullets or vertical label/value blocks instead of tables.
 - If the user asks for a file (Excel, PDF, PPTX), generate it and provide the file path.
 - If the user asks for research with links, include full URLs.
@@ -566,7 +520,7 @@ ${config.systemPrompt}`);
   }
 
   if (soul) {
-    sections.push(`# Soul Instructions (from ~/.Janex/SOUL.md)
+    sections.push(`# Soul Instructions (from ~/.janex/SOUL.md)
 ${soul}`);
   }
 
@@ -587,3 +541,4 @@ ${memorySummary}`);
 
   return sections.join('\n\n');
 }
+

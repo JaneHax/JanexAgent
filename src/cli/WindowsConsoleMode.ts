@@ -170,3 +170,4 @@ export async function flushWindowsConsoleInputBuffer(
 ): Promise<boolean> {
   return createWindowsConsoleModeController(deps).flushInputBuffer();
 }
+
