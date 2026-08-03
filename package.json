@@ -89,7 +89,21 @@
                             "@typescript-eslint/eslint-plugin":  "^8.18.0",
                             "vitest":  "^2.1.0"
                         },
-    "engines":  {
+  "files": [
+    "dist",
+    "bin",
+    "LICENSE",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JaneHax/JanexAgent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JaneHax/JanexAgent/issues"
+  },
+  "homepage": "https://github.com/JaneHax/JanexAgent#readme",
+  "engines": {
                     "node":  "\u003e=18.0.0",
                     "python":  "\u003e=3.9"
                 },
