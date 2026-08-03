@@ -15,7 +15,8 @@
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "node node_modules/vitest/vitest.mjs run",
-    "test:watch": "node node_modules/vitest/vitest.mjs"
+    "test:watch": "node node_modules/vitest/vitest.mjs",
+    "postinstall": "node scripts/postinstall.mjs"
   },
   "keywords": [
     "ai",
@@ -48,8 +49,6 @@
     "chokidar": "^3.6.0",
     "axios": "^1.7.7",
     "cheerio": "^1.0.0-rc.12",
-    "playwright": "^1.47.0",
-    "puppeteer": "^22.15.0",
     "openai": "^4.68.0",
     "@ai-sdk/openai": "^1.0.0",
     "@ai-sdk/anthropic": "^1.0.0",
@@ -64,12 +63,12 @@
     "googleapis": "^144.0.0",
     "telegraf": "^4.16.3",
     "discord.js": "^14.16.3",
-    "whatsapp-web.js": "^1.26.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "ink": "^5.0.1",
     "ink-text-input": "^6.0.0",
-    "blessed": "^0.1.81"
+    "blessed": "^0.1.81",
+    "playwright-core": "playwright-core"
   },
   "devDependencies": {
     "typescript": "^5.6.3",
@@ -91,6 +90,7 @@
   "files": [
     "dist",
     "bin",
+    "scripts",
     "LICENSE",
     "README.md"
   ],
@@ -108,5 +108,10 @@
   },
   "config": {
     "dir": "~/.janex"
+  },
+  "optionalDependencies": {
+    "@whiskeysockets/baileys": "^7.0.0-rc13",
+    "discord.js": "^14.16.3",
+    "pino": "^10.3.1"
   }
 }
