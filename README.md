@@ -6,7 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Interface](https://img.shields.io/badge/Interface-Terminal%20%2B%20Discord%20%2B%20Telegram%2BWhatsApp-orange)](https://github.com/JaneHax/JanexAgent)
 
-![Janex](https://image-url.com/r22/default/images/1783353521423-c6c0dcbf-3529-48f2-9399-41573d6c6a3a.png)
+![Janex](https://imgur.com/F0WwWIf)
 
 **The open-source AI agent that doesn't just chat — it opens browsers, edits repos, runs tools, solves CAPTCHAs, hunts bugs, and finishes workflows.**
 
