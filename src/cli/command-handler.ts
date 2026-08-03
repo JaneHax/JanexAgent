@@ -101,7 +101,7 @@ export class CommandHandler {
     }
   }
 
-  private cmdHelp(): boolean {
+  private async cmdHelp(): boolean {
     const { formatCommands } = await import('./commands.js');
     this.ctx.addMessage({ role: 'system', content: `JANEX Commands:\n\n${formatCommands()}` });
     return true;
