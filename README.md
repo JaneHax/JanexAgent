@@ -20,8 +20,8 @@ Janex is a terminal-native autonomous workspace for builders, researchers, CTF p
 
 ```bash
 npm install -g janex-agent
-janex-agent setup
-janex-agent
+janex setup
+janex
 ```
 
 That is the whole path: install the CLI, configure your model endpoint, then start the terminal workspace.
@@ -34,19 +34,19 @@ cd JanexAgent
 npm install
 npm run build
 npm link
-janex-agent
+janex
 ```
 
 Need a simple prompt-only mode?
 
 ```bash
-janex-agent --lite
+janex --lite
 ```
 
 Want Janex in chat apps?
 
 ```bash
-janex-agent gateway
+janex gateway
 ```
 
 ---
@@ -373,7 +373,7 @@ Mobile control and personal automation.
 Always-on assistant access through a familiar chat app.
 
 ```bash
-janex-agent gateway
+janex gateway
 ```
 
 Gateway mode supports per-user sessions, context continuity, command handling, and tool status updates.
@@ -401,13 +401,13 @@ The local `skills/` tree currently contains **330+ skill files**, including Bug 
 ### CLI entrypoints
 
 ```
-janex-agent              # Launch full TUI
-janex-agent --lite       # Launch lite prompt mode
-janex-agent setup        # Configure provider/model/key
-janex-agent gateway      # Start Discord/Telegram/WhatsApp gateway
-janex-agent api          # Start local Reddit research API on :3001
-janex-agent --continue   # Continue latest session
-janex-agent --resume ID  # Resume a specific session
+janex              # Launch full TUI
+janex --lite       # Launch lite prompt mode
+janex setup        # Configure provider/model/key
+janex gateway      # Start Discord/Telegram/WhatsApp gateway
+janex api          # Start local Reddit research API on :3001
+janex --continue   # Continue latest session
+janex --resume ID  # Resume a specific session
 ```
 
 ### In-app slash commands
@@ -734,7 +734,7 @@ skills/
   ...330+ more
 
 bin/
-  janex-agent.js     CLI launcher
+  janex.js     CLI launcher
 
 scripts/
   build.cjs          Build script
@@ -829,3 +829,6 @@ MIT — see [`LICENSE`](LICENSE).
 - Architecture: [`docs/architecture.md`](docs/architecture.md)
 - Contributing: [`CONTRIBUTING.md`](CONTRIBUTING.md)
 - Code of Conduct: [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)
+
+
+
