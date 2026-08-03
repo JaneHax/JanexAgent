@@ -1,0 +1,39 @@
+{
+    "compilerOptions":  {
+                            "target":  "ES2022",
+                            "module":  "NodeNext",
+                            "lib":  [
+                                        "ES2022",
+                                        "dom"
+                                    ],
+                            "outDir":  "./dist",
+                            "rootDir":  "./src",
+                            "strict":  false,
+                            "esModuleInterop":  true,
+                            "skipLibCheck":  true,
+                            "forceConsistentCasingInFileNames":  true,
+                            "resolveJsonModule":  true,
+                            "jsx":  "react-jsx",
+                            "moduleResolution":  "NodeNext",
+                            "allowSyntheticDefaultImports":  true,
+                            "declaration":  true,
+                            "declarationMap":  true,
+                            "sourceMap":  true,
+                            "baseUrl":  ".",
+                            "paths":  {
+                                          "@/*":  [
+                                                      "./src/*"
+                                                  ]
+                                      }
+                        },
+    "include":  [
+                    "src/**/*",
+                    "src/types/**/*"
+                ],
+    "exclude":  [
+                    "node_modules",
+                    "dist",
+                    "skills",
+                    "scaffolds"
+                ]
+}

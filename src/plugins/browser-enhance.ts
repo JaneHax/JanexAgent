@@ -1,0 +1,1 @@
+export const browserEnhancePlugin = { name: 'browser-enhance', init: () => {} };

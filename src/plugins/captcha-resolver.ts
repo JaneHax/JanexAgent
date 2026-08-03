@@ -1,0 +1,1 @@
+export const captchaResolverPlugin = { name: 'captcha-resolver', init: () => {} };

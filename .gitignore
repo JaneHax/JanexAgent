@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.log
+.env
+.env.local
+.aurix-browser-profile/
+~/.janex/
+*.tsbuildinfo
+coverage/
+.DS_Store
+Thumbs.db
+*.tgz
+*.tar.gz
+*.pid
+*.seed
+*.pid.lock
+.nyc_output/

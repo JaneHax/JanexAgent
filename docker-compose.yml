@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  janex:
+    build: .
+    container_name: janex
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - Janex_PROVIDER=custom
+      - Janex_BASE_URL=${Janex_BASE_URL}
+      - Janex_API_KEY=${Janex_API_KEY}
+      - Janex_MODEL=${Janex_MODEL}
+    volumes:
+      - ~/.janex:/root/.janex
+      - .:/app
+    command: npm start
+
+  redis:
+    image: redis:7-alpine
+    container_name: janex-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:

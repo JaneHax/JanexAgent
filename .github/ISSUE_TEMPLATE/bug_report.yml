@@ -1,0 +1,45 @@
+---
+name: Bug Report
+about: Report a bug to help us improve Janex
+title: '[bug] '
+labels: bug
+assignees: ''
+---
+
+## Description
+
+Clear and concise description of the bug.
+
+## Steps to Reproduce
+
+1. Run command `...`
+2. Configure `...`
+3. Observe error `...`
+
+## Expected Behavior
+
+What you expected to happen.
+
+## Actual Behavior
+
+What actually happened. Include error messages and logs.
+
+## Environment
+
+- OS: [e.g. Windows 11, Ubuntu 22.04]
+- Node.js version: [e.g. 20.10.0]
+- Janex version: [e.g. 1.0.0]
+- Model/Provider: [e.g. Ollama llama3.2]
+
+## Configuration
+
+```yaml
+# Paste your ~/.janex/config.yaml (redact API keys)
+provider: custom
+baseUrl: ...
+model: ...
+```
+
+## Additional Context
+
+Screenshots, logs, or any other relevant information.

@@ -1,0 +1,27 @@
+---
+name: Feature Request
+about: Suggest a new feature or improvement for Janex
+title: '[feature] '
+labels: enhancement
+assignees: ''
+---
+
+## Summary
+
+Clear and concise summary of the feature.
+
+## Motivation
+
+Why is this feature useful? Who benefits from it?
+
+## Proposed Solution
+
+Describe how you think this should work.
+
+## Alternatives Considered
+
+Other approaches you've considered.
+
+## Additional Context
+
+Links, mockups, or references to similar features in other projects.

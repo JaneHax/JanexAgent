@@ -1,0 +1,31 @@
+---
+name: Pull Request
+about: Submit a pull request to Janex
+title: ''
+labels: ''
+assignees: ''
+---
+
+## Description
+
+Summary of changes and motivation.
+
+## Type of Change
+
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
+
+## Checklist
+
+- [ ] Code follows the style guidelines in AGENTS.md
+- [ ] Self-reviewed my code
+- [ ] Added tests if applicable
+- [ ] Updated documentation if applicable
+- [ ] `npm run lint` passes
+- [ ] No secrets or keys committed
+
+## Related Issues
+
+Closes #...

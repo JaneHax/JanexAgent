@@ -1,0 +1,1 @@
+export const projectRules = { get: () => ({}), set: () => {} };
