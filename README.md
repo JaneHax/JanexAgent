@@ -12,7 +12,7 @@
 
 Janex is a terminal-native autonomous workspace for builders, researchers, CTF players, and automation power users. Bring your own model endpoint, launch the TUI, and let the agent operate inside your real environment.
 
-[**Quick Install**](#quick-install) · [**Why Janex**](#why-janex) · [**Features**](#standout-features) · [**Bug Hunt**](#bug-hunt-skills) · [**Research**](#research--social-intelligence) · [**Config**](#configuration)
+[**Quick Install**](#quick-install) · [**Why Janex**](#why-janex) · [**Features**](#standout-features) · [**Research**](#research--social-intelligence) · [**Config**](#configuration)
 
 ---
 
