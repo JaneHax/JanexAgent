@@ -68,7 +68,7 @@
     "ink": "^5.0.1",
     "ink-text-input": "^6.0.0",
     "blessed": "^0.1.81",
-    "playwright-core": "playwright-core"
+    "playwright-core": "^1.60.0"
   },
   "devDependencies": {
     "typescript": "^5.6.3",
