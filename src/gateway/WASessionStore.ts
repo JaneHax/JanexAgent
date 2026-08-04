@@ -33,6 +33,7 @@ export async function useSQLiteAuthState(dbPath?: string): Promise<{ state: SQLi
   } else {
     db = new SQL.Database();
   }
+  db.run(`PRAGMA journal_mode=WAL;`);
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS wa_credentials (
