@@ -23,6 +23,7 @@ export interface SkillInvocation {
 
 const SKILLS_DIR = path.join(os.homedir(), '.janex', 'skills');
 const REPO_SKILLS_DIR = path.join(process.cwd(), 'skills');
+const PACKAGE_SKILLS_DIR = path.join(__dirname, '..', '..', 'skills');
 
 let cachedSkills: SkillManifest[] | null = null;
 let cachedSkillContent = new Map<string, string>();
@@ -33,7 +34,7 @@ export function clearSkillsCache(): void {
 }
 
 export function ensureSkillsDir(): void {
-  for (const dir of [SKILLS_DIR, REPO_SKILLS_DIR]) {
+  for (const dir of [SKILLS_DIR, REPO_SKILLS_DIR, PACKAGE_SKILLS_DIR]) {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   }
 }
@@ -68,6 +69,7 @@ export function scanSkills(): SkillManifest[] {
   };
 
   scanDir(REPO_SKILLS_DIR, 'local');
+  scanDir(PACKAGE_SKILLS_DIR, 'local');
   scanDir(SKILLS_DIR, 'external');
   cachedSkills = skills.sort((a, b) => a.slug.localeCompare(b.slug));
   return cachedSkills;
