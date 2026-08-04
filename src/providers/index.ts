@@ -8,6 +8,11 @@ import {
   openAIBaseUrl,
   openAIEndpoint,
 } from '../utils/base-url.js';
+import {
+  detectApiModeForUrl,
+  autoDetectLocalModel,
+  resolveApiStyle,
+} from '../utils/provider-detect.js';
 
 export interface Message {
   role: 'system' | 'user' | 'assistant' | 'tool';
@@ -827,9 +832,19 @@ export class AutoDetectProvider implements Provider {
   private anthropic: AnthropicProvider | null = null;
   private resolved: Provider | null = null;
   private config: janexConfig;
+  private detectedMode: 'openai' | 'anthropic' | null = null;
 
   constructor(config: janexConfig) {
     this.config = config;
+    const detected = detectApiModeForUrl(config.baseUrl || '');
+    if (detected === 'anthropic') {
+      this.detectedMode = 'anthropic';
+    } else if (detected === 'codex_responses') {
+      this.detectedMode = 'openai';
+    } else {
+      const providerDetected = resolveApiStyle(config);
+      this.detectedMode = providerDetected === 'anthropic' ? 'anthropic' : null;
+    }
   }
 
   async chat(messages: Message[], tools?: ToolDef[]): Promise<ChatResponse> {
@@ -838,33 +853,46 @@ export class AutoDetectProvider implements Provider {
     }
 
     const apiStyle = (this.config as any).apiStyle as string | undefined;
-
     if (apiStyle === 'anthropic') {
       this.resolved = new AnthropicProvider(this.config);
       return this.resolved.chat(messages, tools);
     }
-
     if (apiStyle === 'openai') {
       this.resolved = new OpenAIProvider(this.config);
       return this.resolved.chat(messages, tools);
+    }
+
+    if (this.detectedMode === 'anthropic') {
+      try {
+        this.anthropic = new AnthropicProvider(this.config);
+        const result = await this.anthropic.chat(messages, tools);
+        this.resolved = this.anthropic;
+        this.name = 'custom (anthropic-compat)';
+        return result;
+      } catch (e: any) {
+        this.detectedMode = null;
+      }
     }
 
     try {
       this.openai = new OpenAIProvider(this.config);
       const result = await this.openai.chat(messages, tools);
       this.resolved = this.openai;
-      this.name = `custom (openai-compat)`;
+      this.name = 'custom (openai-compat)';
       return result;
     } catch {
       try {
         this.anthropic = new AnthropicProvider(this.config);
         const result = await this.anthropic.chat(messages, tools);
         this.resolved = this.anthropic;
-        this.name = `custom (anthropic-compat)`;
+        this.name = 'custom (anthropic-compat)';
         return result;
       } catch (e: any) {
+        const hint = this.config.baseUrl
+          ? `\n\nBase URL: ${this.config.baseUrl}`
+          : '';
         throw new Error(
-          `Auto-detect failed. Set apiStyle to 'openai' or 'anthropic' explicitly. Last error: ${e.message}`
+          `Auto-detect failed for ${this.config.baseUrl || 'custom endpoint'}. Set apiStyle to 'openai' or 'anthropic' explicitly. Last error: ${e.message}${hint}`
         );
       }
     }
@@ -873,22 +901,32 @@ export class AutoDetectProvider implements Provider {
 
 // ─── Factory ───────────────────────────────────────────────────────────────
 
+let localModelCache: Promise<string> | null = null;
+
+async function detectLocalModelOnce(baseUrl: string): Promise<string> {
+  if (!localModelCache) {
+    localModelCache = autoDetectLocalModel(baseUrl).catch(() => '');
+  }
+  return localModelCache;
+}
+
 export function createProvider(config: janexConfig): Provider {
-  const apiStyle = (config as any).apiStyle as string | undefined;
+  const resolvedStyle = resolveApiStyle(config);
 
   switch (config.provider) {
     case 'anthropic':
       return new AnthropicProvider(config);
     case 'openai':
       return new OpenAIProvider(config);
-    case 'custom':
-      if (apiStyle === 'anthropic') {
+    case 'custom': {
+      if (resolvedStyle === 'anthropic') {
         return new AnthropicProvider(config);
       }
-      if (apiStyle === 'openai') {
+      if (resolvedStyle === 'openai') {
         return new OpenAIProvider(config);
       }
       return new AutoDetectProvider(config);
+    }
     case 'custom-anthropic':
       return new AnthropicProvider(config);
     default:
