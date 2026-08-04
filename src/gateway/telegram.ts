@@ -402,7 +402,9 @@ export class TelegramPlatform extends EventEmitter implements Platform {
             const cb = update.callback_query;
             try {
               await this.api('answerCallbackQuery', { callback_query_id: cb.id });
-            } catch (e) {}
+            } catch {
+              // best-effort; ignore callback query answer failures
+            }
             await this.clearInlineKeyboard(cb.message?.chat?.id, cb.message?.message_id);
 
             const chatType =
