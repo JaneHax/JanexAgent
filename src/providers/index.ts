@@ -514,6 +514,140 @@ export class OpenAIProvider implements Provider {
         : undefined,
     };
   }
+
+  async *streamChat(
+    messages: Message[],
+    tools?: ToolDef[]
+  ): AsyncIterable<string> {
+    if (this.endpointMode === 'completion') {
+      const response = await this.completionFallback(messages);
+      yield response.text;
+      return;
+    }
+
+    const clean = sanitizeMessages(messages);
+    const params: any = {
+      model: this.model,
+      messages: clean.map((m) => {
+        if (m.role === 'tool') {
+          return { role: 'tool' as const, content: m.content, tool_call_id: m.toolCallId || '' };
+        }
+        if (m.role === 'assistant' && m.toolCalls?.length) {
+          return {
+            role: 'assistant' as const,
+            content: m.content || null,
+            tool_calls: m.toolCalls.map((tc) => ({
+              id: tc.id,
+              type: 'function' as const,
+              function: { name: tc.name, arguments: JSON.stringify(tc.arguments) },
+            })),
+          };
+        }
+        if (m.images?.length) {
+          const content: Array<
+            { type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } }
+          > = [{ type: 'text', text: m.content }];
+          for (const imgPath of m.images) {
+            const img = imageToBase64(imgPath);
+            if (img) {
+              content.push({
+                type: 'image_url',
+                image_url: { url: `data:${img.mediaType};base64,${img.data}` },
+              });
+            }
+          }
+          return { role: m.role as 'user', content };
+        }
+        return { role: m.role as 'system' | 'user' | 'assistant', content: m.content };
+      }),
+      max_tokens: this.maxTokens,
+      temperature: this.temperature,
+      stream: true,
+    };
+
+    if (tools?.length) {
+      params.tools = tools;
+      params.tool_choice = 'auto';
+    }
+
+    const url = this.baseUrl.endsWith('/chat/completions')
+      ? this.baseUrl
+      : `${this.baseUrl}/chat/completions`;
+
+    let fetchOpts: any = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify(params),
+    };
+
+    bypassProxyIfLocal(url);
+    if (url.includes('localhost') || url.includes('127.0.0.1')) {
+      try {
+        const { Agent } = await import('undici');
+        fetchOpts.dispatcher = new Agent({ connect: { rejectUnauthorized: false } });
+      } catch {
+        // undici optional; fall back to default fetch dispatcher
+      }
+    }
+
+    const fetchRes = await fetch(url, fetchOpts);
+
+    if (!fetchRes.ok) {
+      const errorText = await fetchRes.text();
+      throw new Error(`HTTP ${fetchRes.status}: ${errorText}\n\nRaw Response:\n${errorText}`);
+    }
+
+    const isStream = fetchRes.headers.get('content-type')?.includes('text/event-stream');
+
+    if (!isStream) {
+      const text = await fetchRes.text();
+      let res: any;
+      try {
+        res = JSON.parse(text);
+      } catch {
+        yield text;
+        return;
+      }
+      const content = res.choices?.[0]?.message?.content || '';
+      yield content;
+      return;
+    }
+
+    const reader = fetchRes.body?.getReader();
+    const decoder = new TextDecoder();
+    let streamBuffer = '';
+
+    if (reader) {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        streamBuffer += decoder.decode(value, { stream: true });
+        const lines = streamBuffer.split(/\r?\n/);
+        streamBuffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine.startsWith('data: ') || trimmedLine.includes('[DONE]')) continue;
+          const payload = trimmedLine.replace(/^data:\s*/, '').trim();
+          if (!payload) continue;
+
+          let chunk: any;
+          try {
+            chunk = JSON.parse(payload);
+          } catch {
+            continue;
+          }
+
+          if (chunk.choices?.[0]?.delta?.content) {
+            yield chunk.choices[0].delta.content;
+          }
+        }
+      }
+    }
+  }
 }
 
 // ─── Anthropic Provider ────────────────────────────────────────────────────
@@ -859,6 +993,149 @@ export class AnthropicProvider implements Provider {
             )
           : undefined,
     };
+  }
+
+  async *streamChat(messages: Message[], tools?: ToolDef[]): AsyncIterable<string> {
+    if (this.endpointMode === 'openai-compat') {
+      const clean = sanitizeMessages(messages);
+      const client = new OpenAI({
+        apiKey: this.apiKey,
+        baseURL: openAIBaseUrl(this.baseUrl),
+      });
+      const stream = await client.chat.completions.create({
+        model: this.model,
+        messages: clean.map((m) => ({ role: m.role as 'user' | 'assistant' | 'system', content: m.content })),
+        max_tokens: this.maxTokens,
+        stream: true,
+      });
+      for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta?.content || '';
+        if (delta) yield delta;
+      }
+      return;
+    }
+
+    const clean = sanitizeMessages(messages);
+    const systemText = clean
+      .filter((m) => m.role === 'system')
+      .map((m) => m.content)
+      .join('\n\n');
+    const nonSystem = clean.filter((m) => m.role !== 'system');
+
+    const body: Record<string, unknown> = {
+      model: this.model,
+      max_tokens: this.maxTokens,
+      stream: true,
+      messages: nonSystem.map((m) => {
+        if (m.role === 'tool') {
+          return {
+            role: 'user',
+            content: [
+              {
+                type: 'tool_result',
+                tool_use_id: m.toolCallId || '',
+                content: m.content,
+              },
+            ],
+          };
+        }
+        if (m.role === 'assistant' && m.toolCalls?.length) {
+          const content: unknown[] = [];
+          if (m.content) content.push({ type: 'text', text: m.content });
+          for (const tc of m.toolCalls) {
+            content.push({ type: 'tool_use', id: tc.id, name: tc.name, input: tc.arguments });
+          }
+          return { role: 'assistant', content };
+        }
+        if (m.images?.length) {
+          const content: unknown[] = [{ type: 'text', text: m.content }];
+          for (const img of m.images) {
+            const imgData = imageToBase64(img);
+            if (imgData) {
+              content.push({
+                type: 'image',
+                source: { type: 'base64', media_type: imgData.mediaType, data: imgData.data },
+              });
+            }
+          }
+          return { role: m.role, content };
+        }
+        return { role: m.role, content: m.content };
+      }),
+    };
+
+    if (systemText) body.system = systemText;
+
+    if (tools?.length) {
+      body.tools = tools.map((t) => ({
+        name: t.function.name,
+        description: t.function.description,
+        input_schema: t.function.parameters,
+      }));
+    }
+
+    const url = anthropicMessagesEndpoint(this.baseUrl);
+    bypassProxyIfLocal(url);
+
+    let fetchOpts: any = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': this.apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify(body),
+    };
+
+    if (url.includes('localhost') || url.includes('127.0.0.1')) {
+      try {
+        const { Agent } = await import('undici');
+        fetchOpts.dispatcher = new Agent({ connect: { rejectUnauthorized: false } });
+      } catch {
+        // undici optional; fall back to default fetch dispatcher
+      }
+    }
+
+    const res = await fetch(url, fetchOpts);
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(
+        `Anthropic API error (${res.status}): ${errText}\n\nRaw Response:\n${errText}`
+      );
+    }
+
+    const rawText = await res.text();
+    const trimmed = rawText.trim();
+
+    if (trimmed.startsWith('data:') || trimmed.startsWith('event:')) {
+      const lines = trimmed.split('\n');
+      for (const line of lines) {
+        const d = line.replace(/^data:\s*/, '').trim();
+        if (!d || d === '[DONE]') continue;
+        try {
+          const evt = JSON.parse(d);
+          if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+            yield evt.delta.text;
+          }
+        } catch {
+          // skip malformed event
+        }
+      }
+    } else {
+      let data: any;
+      try {
+        data = JSON.parse(trimmed);
+      } catch {
+        yield trimmed;
+        return;
+      }
+      let text = '';
+      for (const block of data.content || []) {
+        if (block.type === 'text') text += block.text;
+      }
+      yield text;
+    }
   }
 }
 

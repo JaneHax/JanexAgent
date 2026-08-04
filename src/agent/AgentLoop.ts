@@ -1163,12 +1163,23 @@ export class AgentLoop {
         },
       ];
       try {
-        const final = await this.provider.chat(
-          finalMessages,
-          undefined,
-          this.abortController.signal
-        );
-        const text = final.text.trim() || `Stopped tool loop: ${reason}`;
+        let finalText = '';
+        if (this.provider.streamChat) {
+          try {
+            for await (const chunk of this.provider.streamChat(finalMessages)) {
+              finalText += chunk;
+            }
+          } catch (e: any) {
+            if (!this.abortController.signal.aborted) {
+              const fallback = await this.provider.chat(finalMessages, undefined, this.abortController.signal);
+              finalText = fallback.text;
+            }
+          }
+        } else {
+          const final = await this.provider.chat(finalMessages, undefined, this.abortController.signal);
+          finalText = final.text;
+        }
+        const text = finalText.trim() || `Stopped tool loop: ${reason}`;
         return this.withEvidenceSummary(text, store, turnId);
       } catch (e: any) {
         return this.withEvidenceSummary(
@@ -1238,11 +1249,33 @@ export class AgentLoop {
           : recoveryNames.length > 0
             ? this.registry.getToolDefs(recoveryNames)
             : this.registry.getToolDefs();
-        response = await this.provider.chat(
-          messagesForModel,
-          toolDefs,
-          this.abortController.signal
-        );
+        let fullText = '';
+        if (this.provider.streamChat) {
+          try {
+            for await (const chunk of this.provider.streamChat(messagesForModel, toolDefs)) {
+              fullText += chunk;
+              yield { type: 'text', data: chunk };
+            }
+            response = {
+              text: fullText,
+              toolCalls: [],
+              usage: undefined,
+            };
+          } catch (e: any) {
+            if (this.abortController.signal.aborted) throw e;
+            response = await this.provider.chat(
+              messagesForModel,
+              toolDefs,
+              this.abortController.signal
+            );
+          }
+        } else {
+          response = await this.provider.chat(
+            messagesForModel,
+            toolDefs,
+            this.abortController.signal
+          );
+        }
         if (
           response.toolCalls.length === 0 &&
           response.text &&
