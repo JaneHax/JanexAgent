@@ -24,6 +24,14 @@ export interface SkillInvocation {
 const SKILLS_DIR = path.join(os.homedir(), '.janex', 'skills');
 const REPO_SKILLS_DIR = path.join(process.cwd(), 'skills');
 
+let cachedSkills: SkillManifest[] | null = null;
+let cachedSkillContent = new Map<string, string>();
+
+export function clearSkillsCache(): void {
+  cachedSkills = null;
+  cachedSkillContent.clear();
+}
+
 export function ensureSkillsDir(): void {
   for (const dir of [SKILLS_DIR, REPO_SKILLS_DIR]) {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -31,6 +39,7 @@ export function ensureSkillsDir(): void {
 }
 
 export function scanSkills(): SkillManifest[] {
+  if (cachedSkills) return cachedSkills;
   ensureSkillsDir();
   const skills: SkillManifest[] = [];
   const seen = new Set<string>();
@@ -60,15 +69,19 @@ export function scanSkills(): SkillManifest[] {
 
   scanDir(REPO_SKILLS_DIR, 'local');
   scanDir(SKILLS_DIR, 'external');
-  return skills.sort((a, b) => a.slug.localeCompare(b.slug));
+  cachedSkills = skills.sort((a, b) => a.slug.localeCompare(b.slug));
+  return cachedSkills;
 }
 
 export function loadSkillContent(slug: string): string | null {
+  if (cachedSkillContent.has(slug)) return cachedSkillContent.get(slug)!;
   const skills = scanSkills();
   const skill = skills.find((s) => s.slug === slug);
   if (!skill) return null;
   const manifestPath = path.join(skill.path, 'SKILL.md');
-  return fs.readFileSync(manifestPath, 'utf-8');
+  const content = fs.readFileSync(manifestPath, 'utf-8');
+  cachedSkillContent.set(slug, content);
+  return content;
 }
 
 export function resolveSkillSlug(input: string): string | null {
