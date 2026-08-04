@@ -2094,9 +2094,13 @@ export class Gateway extends EventEmitter {
         let progressMessageId: string | undefined;
         let progressCanEdit = false;
         let sawToolStatus = false;
+        let typingInterval: ReturnType<typeof setInterval> | undefined;
 
         await platform.react?.(msg.channelId, msg.replyTo || '', '👀');
         await platform.typing?.(msg.channelId);
+        typingInterval = setInterval(() => {
+          platform.typing?.(msg.channelId).catch(() => {});
+        }, 4000);
 
         const thinking = gatewayText('🧠 **Thinking...**', platform.name);
         if (progressMode) {
@@ -2348,6 +2352,7 @@ export class Gateway extends EventEmitter {
         const rendered = gatewayText(`❌ Error: ${e.message}`, platform.name);
         await platform.send(rendered.text, msg.channelId, msg.replyTo, rendered.options);
       } finally {
+        if (typingInterval) clearInterval(typingInterval);
         this.activeProcessing.delete(agentKey);
         this.processing.delete(agentKey);
         if (this.activeRuns.get(agentKey) === currentRunId) this.activeRuns.delete(agentKey);
