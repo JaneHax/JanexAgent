@@ -227,7 +227,7 @@ interface AppProps {
   cronDaemon?: CronDaemon;
 }
 
-export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
+function App({ config, registry, resumeId, cronDaemon }: AppProps) {
   const renderer = useRenderer();
   const { width: termWidth, height: termHeight } = useTerminalDimensions();
   const [messages, setMessages] = useState<ChatMessage[]>([]);

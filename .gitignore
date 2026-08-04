@@ -15,4 +15,8 @@ Thumbs.db
 *.seed
 *.pid.lock
 .nyc_output/
+commands/*.js
+commands/*.d.ts
+commands/*.js.map
+commands/*.d.ts.map
 

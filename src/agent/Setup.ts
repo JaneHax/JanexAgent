@@ -408,7 +408,7 @@ async function stepModel(
     const detectedModels = await fetchAvailableModels(baseUrl);
     if (detectedModels.length > 0) {
       const items = [
-        ...detectedModels.slice(0, 20).map(m => ({
+        ...detectedModels.map(m => ({
           id: m.id,
           label: m.label,
           desc: undefined as string | undefined,
