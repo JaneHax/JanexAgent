@@ -60,6 +60,7 @@ import {
   completeTodo as completeTodoInFile,
   getTodoStats,
 } from '../utils/TodoManager.js';
+import { ErrorBoundary } from './ErrorBoundary.js';
 
 const VALID_DEPTHS = ['low', 'medium', 'high', 'xhigh', 'max', 'ultra'] as const;
 type ResearchDepth = (typeof VALID_DEPTHS)[number];
@@ -3254,6 +3255,23 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
   );
 }
 
+const AppWithErrorBoundary = (props: any) => (
+  <ErrorBoundary
+    fallback={(error) => (
+      <box flexDirection="column" padding={1}>
+        <text fg="red" bold>
+          Fatal UI Error
+        </text>
+        <text fg="red">{error.message}</text>
+        <text fg="yellow">
+          Press Ctrl+C to exit. Session data is saved in ~/.janex/.
+        </text>
+      </box>
+    )}
+  >
+    <App {...props} />
+  </ErrorBoundary>
+);
 
-
+export { AppWithErrorBoundary as App };
 

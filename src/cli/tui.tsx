@@ -12,6 +12,7 @@ import { CommandHandler } from './command-handler.js';
 import { pluginManager } from '../plugins/index.js';
 import { browserEnhancePlugin } from '../plugins/browser-enhance.js';
 import { captchaResolverPlugin } from '../plugins/captcha-resolver.js';
+import { ErrorBoundary } from './ErrorBoundary.js';
 
 const MAX_HISTORY = 200;
 
@@ -322,7 +323,23 @@ export class JanexCLI {
       );
     };
 
-    await render(<TUI />);
+    await render(
+      <ErrorBoundary
+        fallback={(error) => (
+          <Box flexDirection="column" padding={1}>
+            <Text color="red" bold>
+              Fatal UI Error
+            </Text>
+            <Text color="red">{error.message}</Text>
+            <Text color="yellow">
+              Press Ctrl+C to exit. Session data is saved in ~/.janex/.
+            </Text>
+          </Box>
+        )}
+      >
+        <TUI />
+      </ErrorBoundary>
+    );
   }
 
   async showStatus(): Promise<void> {
