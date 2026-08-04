@@ -236,6 +236,7 @@ export class SessionStore {
     const db = fs.existsSync(dbPath)
       ? new SQL.Database(fs.readFileSync(dbPath))
       : new SQL.Database();
+    db.run(`PRAGMA journal_mode=WAL;`);
     return new SessionStore(db, dbPath);
   }
 
@@ -253,6 +254,7 @@ export class SessionStore {
     const next = fs.existsSync(this.dbPath)
       ? new SQL.Database(fs.readFileSync(this.dbPath))
       : new SQL.Database();
+    next.run(`PRAGMA journal_mode=WAL;`);
     this.db.close();
     this.db = next;
     this.diskSignature = this.getDiskSignature();

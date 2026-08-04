@@ -40,6 +40,7 @@ import {
   recoveryMessages,
   recoveryToolNames,
 } from './EmptyResponseRecovery.js';
+import { loadSkillContent, scanSkills, type SkillManifest } from './SkillsLoader.js';
 
 const TOOL_RESULTS_DIR = join(homedir(), '.janex-tool-results');
 
@@ -698,11 +699,10 @@ export class AgentLoop {
     this.abortController.abort();
   }
 
-  private autoLoadSkills(userMessage: string): string[] {
+  private async autoLoadSkills(userMessage: string): Promise<string[]> {
     if (this.isGatewayMessage(userMessage) && this.isShortConversationalTurn(userMessage))
       return [];
 
-    const loaded: string[] = [];
     const msg = userMessage.toLowerCase();
     const skillKeywords: Record<string, string[]> = {
       'planning-with-files': [
@@ -718,12 +718,26 @@ export class AgentLoop {
       devops: ['deploy', 'docker', 'kubernetes', 'ci/cd', 'pipeline'],
     };
 
-    for (const [skillId, keywords] of Object.entries(skillKeywords)) {
-      if (keywords.some((kw) => msg.includes(kw))) {
-        loaded.push(skillId);
-      }
-    }
-    return loaded;
+    const matchedIds = Object.entries(skillKeywords)
+      .filter(([, keywords]) => keywords.some((kw) => msg.includes(kw)))
+      .map(([skillId]) => skillId);
+
+    if (matchedIds.length === 0) return [];
+
+    const allSkills = scanSkills();
+    const skillMap = new Map(allSkills.map((s) => [s.slug, s]));
+
+    const loaded = await Promise.all(
+      matchedIds.map(async (id) => {
+        const skill = skillMap.get(id);
+        if (!skill) return null;
+        const content = loadSkillContent(id) || '';
+        if (!content) return null;
+        return `[SKILL: ${skill.name}]\n${content}\n[END SKILL]`;
+      })
+    );
+
+    return loaded.filter((msg): msg is string => msg != null);
   }
 
   private autoCreateTodos(userMessage: string): void {
@@ -1002,9 +1016,9 @@ export class AgentLoop {
     });
     this.ledger.add('userInput', userMessage);
 
-    const loadedSkills = this.autoLoadSkills(userMessage);
+    const loadedSkills = await this.autoLoadSkills(userMessage);
     if (loadedSkills.length > 0) {
-      const skillInstructions = loadedSkills.map((id) => `[Auto-loaded skill: ${id}]`).join('\n');
+      const skillInstructions = loadedSkills.join('\n\n');
       this.messages.push({ role: 'system', content: skillInstructions });
     }
 

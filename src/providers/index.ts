@@ -257,7 +257,9 @@ export class OpenAIProvider implements Provider {
         try {
           const { Agent } = await import('undici');
           fetchOpts.dispatcher = new Agent({ connect: { rejectUnauthorized: false } }); // Raw socket agent, no proxy
-        } catch (e) {}
+        } catch {
+          // undici optional; fall back to default fetch dispatcher
+        }
       }
 
       if (signal) fetchOpts.signal = signal;
@@ -391,7 +393,9 @@ export class OpenAIProvider implements Provider {
           const parsed =
             typeof e.response.data === 'string' ? JSON.parse(e.response.data) : e.response.data;
           errorMsg = parsed.error?.message || parsed.errorMsg || JSON.stringify(parsed);
-        } catch (_) {}
+        } catch {
+          // non-JSON error body is fine
+        }
       } else if (e.error) {
         rawBody = typeof e.error === 'string' ? e.error : JSON.stringify(e.error, null, 2);
         if (e.error.message) {
@@ -479,10 +483,12 @@ export class OpenAIProvider implements Provider {
     };
 
     if (url.includes('localhost') || url.includes('127.0.0.1')) {
-      try {
-        const { Agent } = await import('undici');
-        fetchOpts.dispatcher = new Agent({ connect: { rejectUnauthorized: false } }); // Raw socket agent, no proxy
-      } catch (e) {}
+        try {
+          const { Agent } = await import('undici');
+          fetchOpts.dispatcher = new Agent({ connect: { rejectUnauthorized: false } }); // Raw socket agent, no proxy
+        } catch {
+          // undici optional; fall back to default fetch dispatcher
+        }
     }
 
     const res = await fetch(url, fetchOpts);
@@ -620,10 +626,12 @@ export class AnthropicProvider implements Provider {
     };
 
     if (url.includes('localhost') || url.includes('127.0.0.1')) {
-      try {
-        const { Agent } = await import('undici');
-        fetchOpts.dispatcher = new Agent({ connect: { rejectUnauthorized: false } });
-      } catch (e) {}
+        try {
+          const { Agent } = await import('undici');
+          fetchOpts.dispatcher = new Agent({ connect: { rejectUnauthorized: false } });
+        } catch {
+          // undici optional; fall back to default fetch dispatcher
+        }
     }
 
     const res = await fetch(url, fetchOpts);
@@ -797,7 +805,9 @@ export class AnthropicProvider implements Provider {
           const parsed =
             typeof e.response.data === 'string' ? JSON.parse(e.response.data) : e.response.data;
           errorMsg = parsed.error?.message || parsed.errorMsg || JSON.stringify(parsed);
-        } catch (_) {}
+        } catch {
+          // non-JSON error body is fine
+        }
       } else if (e.error) {
         rawBody = typeof e.error === 'string' ? e.error : JSON.stringify(e.error, null, 2);
         if (e.error.message) {
