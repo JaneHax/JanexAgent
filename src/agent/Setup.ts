@@ -32,13 +32,29 @@ const CONFIG_FILE = path.join(CONFIG_PATH, 'config.yaml');
 const SETUP_STATE = path.join(CONFIG_PATH, '.setup-state.json');
 
 function setupProviderFromConfig(config: janexConfig): string | undefined {
-  if (config.provider === 'custom-anthropic') return 'custom-anthropic';
+  if (config.provider === 'custom-anthropic') return 'custom';
   if (config.provider === 'custom') {
-    if (config.apiStyle === 'openai') return 'custom-openai';
-    if (config.apiStyle === 'anthropic') return 'custom-anthropic';
-    return 'custom-auto';
+    if (config.apiStyle === 'openai') return 'custom';
+    if (config.apiStyle === 'anthropic') return 'custom';
+    return 'custom';
   }
   return config.provider;
+}
+
+async function detectCustomProviderStyle(
+  baseUrl: string,
+  apiKey: string,
+): Promise<'openai' | 'anthropic' | 'auto'> {
+  drawInfo('Detecting endpoint style...');
+  
+  const models = await fetchAvailableModels(baseUrl);
+  if (models.length > 0) {
+    drawInfo(`Detected OpenAI-compatible endpoint (${models.length} models)`);
+    return 'openai';
+  }
+  
+  drawInfo('Could not auto-detect endpoint style. Defaulting to auto.');
+  return 'auto';
 }
 
 export async function runSetup(continueFrom?: boolean): Promise<janexConfig> {
@@ -76,10 +92,7 @@ export async function runSetup(continueFrom?: boolean): Promise<janexConfig> {
     // Step 2: Base URL (custom providers)
     let baseUrl: string | undefined =
       state.baseUrl || (providerChanged ? undefined : existingConfig.baseUrl);
-    const isCustom =
-      provider === 'custom-openai' ||
-      provider === 'custom-anthropic' ||
-      provider === 'custom-auto';
+    const isCustom = provider === 'custom';
     if (isCustom && !baseUrl) {
       baseUrl = await stepBaseUrl(provider, '3 / 6');
       if (baseUrl === '__skip__' || baseUrl === '__back__') {
@@ -107,9 +120,15 @@ export async function runSetup(continueFrom?: boolean): Promise<janexConfig> {
       }
     }
 
+    // Auto-detect API style for custom providers
+    let detectedApiStyle: 'openai' | 'anthropic' | 'auto' | undefined;
+    if (isCustom && baseUrl && apiKey) {
+      detectedApiStyle = await detectCustomProviderStyle(baseUrl, apiKey);
+    }
+
     // Step 5: Model
     const model =
-      state.model || (await stepModel(provider, existingConfig.model, '5 / 11', baseUrl));
+      state.model || (await stepModel(provider, existingConfig.model, '5 / 11', baseUrl, detectedApiStyle));
     if (model === '__skip__' || model === '__back__') {
       saveSetupState({ step: 'model', provider, baseUrl, apiKey });
       return await loadConfigOrDefault();
@@ -143,19 +162,15 @@ export async function runSetup(continueFrom?: boolean): Promise<janexConfig> {
     );
 
     const resolvedProvider =
-      provider === 'custom-openai' ||
-      provider === 'custom-anthropic' ||
-      provider === 'custom-auto'
-        ? 'custom'
-        : provider;
+      provider === 'custom' ? 'custom' : provider;
 
     const resolvedApiStyle: janexConfig['apiStyle'] =
-      provider === 'custom-openai'
-        ? 'openai'
-        : provider === 'custom-anthropic'
-          ? 'anthropic'
-          : provider === 'custom-auto'
-            ? 'auto'
+      provider === 'custom'
+        ? detectedApiStyle || 'auto'
+        : provider === 'openai'
+          ? 'openai'
+          : provider === 'anthropic'
+            ? 'anthropic'
             : undefined;
 
     const finalBaseUrl = isCustom
@@ -238,43 +253,27 @@ async function stepProvider(existing?: string, step?: string): Promise<string> {
     items: [
       {
         id: 'openai',
-        label: 'OpenAI',
+        label: 'OpenAI-compatible',
         desc:
           existing === 'openai'
             ? 'Current provider'
-            : 'GPT-4o, GPT-4, o1, etc.',
+            : 'OpenAI, GPT-4o, o1, etc.',
       },
       {
         id: 'anthropic',
-        label: 'Anthropic',
+        label: 'Anthropic-compatible',
         desc:
           existing === 'anthropic'
             ? 'Current provider'
             : 'Claude 4, Claude 3.5, etc.',
       },
       {
-        id: 'custom-openai',
-        label: 'Custom (OpenAI-compatible)',
+        id: 'custom',
+        label: 'Custom provider',
         desc:
-          existing === 'custom-openai'
+          existing === 'custom'
             ? 'Current provider'
-            : 'Ollama, LM Studio, vLLM',
-      },
-      {
-        id: 'custom-anthropic',
-        label: 'Custom (Anthropic-compatible)',
-        desc:
-          existing === 'custom-anthropic'
-            ? 'Current provider'
-            : 'Any /v1/messages API',
-      },
-      {
-        id: 'custom-auto',
-        label: 'Custom (auto-detect)',
-        desc:
-          existing === 'custom-auto'
-            ? 'Current provider'
-            : 'Auto-detect endpoint style',
+            : 'Ollama, LM Studio, vLLM, OpenRouter, etc.',
       },
     ],
     allowSkip: true,
@@ -299,9 +298,7 @@ async function stepApiKey(
   const providerNames: Record<string, string> = {
     openai: 'OpenAI',
     anthropic: 'Anthropic',
-    'custom-openai': 'Custom (OpenAI)',
-    'custom-anthropic': 'Custom (Anthropic)',
-    'custom-auto': 'Custom (auto-detect)',
+    custom: 'Custom provider',
   };
   const providerName = providerNames[provider] || provider;
 
@@ -331,13 +328,6 @@ async function stepApiKey(
 }
 
 async function stepBaseUrl(provider: string, step?: string): Promise<string | undefined> {
-  const apiStyle: janexConfig['apiStyle'] =
-    provider === 'custom-openai'
-      ? 'openai'
-      : provider === 'custom-anthropic'
-        ? 'anthropic'
-        : 'auto';
-
   const items = [
     { id: 'custom', label: 'Custom URL', desc: 'Enter your own endpoint' },
     {
@@ -383,7 +373,7 @@ async function stepBaseUrl(provider: string, step?: string): Promise<string | un
       if (!url || url === '__back__') return '__skip__';
 
       try {
-        return normalizeBaseUrl(url, apiStyle);
+        return normalizeBaseUrl(url, 'auto');
       } catch (e: any) {
         drawWarning(e.message);
         drawInfo(
@@ -393,7 +383,7 @@ async function stepBaseUrl(provider: string, step?: string): Promise<string | un
     }
   }
 
-  return normalizeBaseUrl(choice, apiStyle);
+  return normalizeBaseUrl(choice, 'auto');
 }
 
 async function stepModel(
@@ -401,9 +391,10 @@ async function stepModel(
   existingModel?: string,
   step?: string,
   baseUrl?: string,
+  detectedApiStyle?: 'openai' | 'anthropic' | 'auto',
 ): Promise<string> {
   // For custom providers with a base URL, try to fetch available models
-  if ((provider === 'custom-auto' || provider === 'custom-openai' || provider === 'custom-anthropic') && baseUrl) {
+  if (provider === 'custom' && baseUrl) {
     drawInfo('Fetching available models from endpoint...');
     const detectedModels = await fetchAvailableModels(baseUrl);
     if (detectedModels.length > 0) {
@@ -487,20 +478,12 @@ async function stepModel(
         },
         { id: 'custom', label: 'Custom model', desc: 'Type your own model ID' },
       ],
-      'custom-openai': [
-        { id: 'llama3', label: 'Llama 3', desc: 'Meta open-source' },
-        { id: 'mistral', label: 'Mistral', desc: 'Mistral AI' },
-        { id: 'custom', label: 'Custom model', desc: 'Type your own model ID' },
-      ],
-      'custom-anthropic': [
-        { id: 'custom', label: 'Custom model', desc: 'Type your own model ID' },
-      ],
-      'custom-auto': [
+      custom: [
         { id: 'custom', label: 'Custom model', desc: 'Type your own model ID' },
       ],
     };
 
-  const items = models[provider] || models['custom-auto']!;
+  const items = models[provider] || models['custom']!;
   const choice = await drawSelector({
     title: 'Model',
     items,
