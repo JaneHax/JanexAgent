@@ -4,7 +4,7 @@ import { homedir } from 'os';
 import { createHash, randomUUID } from 'crypto';
 import type { janexConfig } from './Config.js';
 import { buildSystemPrompt } from './Context.js';
-import type { Provider, Message } from '../providers/index.js';
+import type { Provider, Message, ToolDef, ChatResponse } from '../providers/index.js';
 import { createProvider } from '../providers/index.js';
 import { countTokens, TokenLedger } from './TokenCounter.js';
 import type { ToolRegistry } from '../tools/Registry.js';
@@ -321,6 +321,7 @@ export interface AgentEvent {
 
 export class AgentLoop {
   private provider: Provider;
+  private fallbackProvider: Provider | null = null;
   private registry: ToolRegistry;
   private config: janexConfig;
   private messages: Message[] = [];
@@ -341,6 +342,7 @@ export class AgentLoop {
   private cachedContextStats?: { signature: string; stats: ContextStats };
   private modelContextInfo: ModelContextInfo;
   private systemPromptCache = new Map<string, { prompt: string; tokens: number }>();
+  private providerFailoverUsed = false;
 
   constructor(config: janexConfig, registry: ToolRegistry) {
     installObserverBusSessionSink();
@@ -387,6 +389,59 @@ export class AgentLoop {
     const { prompt, tokens } = this.getCachedSystemPrompt();
     this.ledger.set('systemPrompt', tokens);
     this.messages.push({ role: 'system', content: prompt });
+  }
+
+  private async initFallbackProvider(): Promise<void> {
+    if (this.fallbackProvider || this.providerFailoverUsed) return;
+    try {
+      const { createProvider, normalizeProviderName, getProviderOverlay } = await import(
+        '../providers/index.js'
+      );
+      const normalized = normalizeProviderName(this.config.provider);
+      const overlay = getProviderOverlay(normalized);
+
+      let fallbackConfig: janexConfig;
+      if (this.config.provider === 'custom' || this.config.provider === 'custom-anthropic') {
+        const oppositeStyle =
+          (this.config as any).apiStyle === 'anthropic' ? 'openai' : 'anthropic';
+        fallbackConfig = {
+          ...this.config,
+          apiStyle: oppositeStyle,
+          provider: oppositeStyle === 'anthropic' ? 'custom-anthropic' : 'custom',
+        };
+      } else if (overlay?.transport === 'anthropic_messages') {
+        fallbackConfig = {
+          ...this.config,
+          provider: 'custom-anthropic',
+          apiStyle: 'anthropic',
+          baseUrl: overlay.baseUrlOverride || this.config.baseUrl,
+        };
+      } else {
+        fallbackConfig = {
+          ...this.config,
+          provider: 'custom',
+          apiStyle: 'auto',
+        };
+      }
+
+      this.fallbackProvider = createProvider(fallbackConfig);
+    } catch {
+      this.fallbackProvider = null;
+    }
+  }
+
+  private async tryFallbackProvider(
+    messages: Message[],
+    toolDefs?: ToolDef[]
+  ): Promise<ChatResponse> {
+    if (!this.fallbackProvider) {
+      this.initFallbackProvider();
+    }
+    if (!this.fallbackProvider) {
+      throw new Error('No fallback provider available');
+    }
+    this.providerFailoverUsed = true;
+    return this.fallbackProvider.chat(messages, toolDefs, this.abortController.signal);
   }
 
   private getSystemPromptCacheKey(): string {
@@ -1113,6 +1168,8 @@ export class AgentLoop {
     let singleSignupRecoveryUsed = false;
     for (let i = 0; i < this.maxIterations; i++) {
       let response;
+      let messagesForModel: Message[];
+      let toolDefs: ToolDef[] | undefined;
       try {
         // Vision-capable main models should receive image inputs directly. Only
         // collapse images into text when the user configured a distinct fallback
@@ -1207,6 +1264,21 @@ export class AgentLoop {
         const errType = classifyError(e);
 
         if (errType === 'auth') {
+          if (!this.providerFailoverUsed && this.config.provider === 'custom') {
+            yield {
+              type: 'text',
+              data: '🔄 Primary provider auth failed — trying fallback provider...',
+            };
+            try {
+              response = await this.tryFallbackProvider(messagesForModel, toolDefs);
+              this.provider = this.fallbackProvider!;
+              retryCount = 0;
+              totalFailures = 0;
+              continue;
+            } catch {
+              this.providerFailoverUsed = true;
+            }
+          }
           yield {
             type: 'error',
             data: `Authentication failed: ${e.message}\nRun /login to update credentials or /model <id> to switch models.`,
@@ -1245,6 +1317,27 @@ export class AgentLoop {
         }
 
         const delays = RETRY_DELAYS[errType] || RETRY_DELAYS.unknown;
+
+        if (
+          !this.providerFailoverUsed &&
+          ['rate_limit', 'server_error', 'proxy_error', 'network', 'unknown'].includes(errType) &&
+          retryCount >= 1
+        ) {
+          yield {
+            type: 'text',
+            data: `🔄 Primary provider ${errType} — trying fallback provider...`,
+          };
+          try {
+            response = await this.tryFallbackProvider(messagesForModel, toolDefs);
+            this.provider = this.fallbackProvider!;
+            retryCount = 0;
+            totalFailures = 0;
+            continue;
+          } catch {
+            this.providerFailoverUsed = true;
+          }
+        }
+
         if (retryCount >= delays.length) {
           const finalFn = FINAL_MESSAGES[errType] || FINAL_MESSAGES.unknown;
           yield { type: 'error', data: finalFn(e.message) };

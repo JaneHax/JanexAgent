@@ -12,7 +12,33 @@ import {
   detectApiModeForUrl,
   autoDetectLocalModel,
   resolveApiStyle,
+  getProviderOverlay,
+  normalizeProviderName,
+  getHostDerivedApiKey,
+  type ProviderOverlay,
 } from '../utils/provider-detect.js';
+
+function resolveBaseUrlWithOverlay(explicit?: string, overlay?: ProviderOverlay | null): string {
+  if (explicit && explicit.trim()) return explicit;
+  const envUrl = overlay?.baseUrlEnvVar ? process.env[overlay.baseUrlEnvVar]?.trim() : '';
+  if (envUrl) return envUrl;
+  if (overlay?.baseUrlOverride) return overlay.baseUrlOverride;
+  return explicit || 'https://api.openai.com/v1';
+}
+
+function resolveApiKeyWithOverlay(explicit?: string, overlay?: ProviderOverlay | null, baseUrl?: string): string {
+  if (explicit && explicit.trim()) return explicit;
+  const envKeys = overlay?.extraEnvVars || [];
+  for (const key of envKeys) {
+    const val = process.env[key]?.trim();
+    if (val) return val;
+  }
+  if (baseUrl) {
+    const derived = getHostDerivedApiKey(baseUrl);
+    if (derived) return derived;
+  }
+  return explicit || '';
+}
 
 export interface Message {
   role: 'system' | 'user' | 'assistant' | 'tool';
@@ -145,16 +171,17 @@ export class OpenAIProvider implements Provider {
   private baseUrl: string;
   private apiKey: string;
 
-  constructor(config: janexConfig) {
-    this.baseUrl = openAIBaseUrl(config.baseUrl);
+  constructor(config: janexConfig, overlay?: ProviderOverlay | null) {
+    const resolvedBaseUrl = resolveBaseUrlWithOverlay(config.baseUrl, overlay);
+    this.baseUrl = openAIBaseUrl(resolvedBaseUrl);
+    this.apiKey = resolveApiKeyWithOverlay(config.apiKey, overlay, this.baseUrl);
     this.client = new OpenAI({
-      apiKey: config.apiKey,
+      apiKey: this.apiKey,
       baseURL: this.baseUrl,
     });
     this.model = config.model;
     this.maxTokens = config.maxTokens || 4096;
     this.temperature = config.temperature ?? 0.7;
-    this.apiKey = config.apiKey;
   }
 
   async chat(messages: Message[], tools?: ToolDef[], signal?: AbortSignal): Promise<ChatResponse> {
@@ -493,11 +520,12 @@ export class AnthropicProvider implements Provider {
   private baseUrl: string;
   private endpointMode: 'anthropic' | 'openai-compat' | null = null;
 
-  constructor(config: janexConfig) {
-    this.apiKey = config.apiKey;
+  constructor(config: janexConfig, overlay?: ProviderOverlay | null) {
+    const resolvedBaseUrl = resolveBaseUrlWithOverlay(config.baseUrl, overlay);
+    this.baseUrl = anthropicBaseUrl(resolvedBaseUrl);
+    this.apiKey = resolveApiKeyWithOverlay(config.apiKey, overlay, this.baseUrl);
     this.model = config.model;
     this.maxTokens = config.maxTokens || 4096;
-    this.baseUrl = anthropicBaseUrl(config.baseUrl);
   }
 
   async chat(messages: Message[], tools?: ToolDef[]): Promise<ChatResponse> {
@@ -833,9 +861,11 @@ export class AutoDetectProvider implements Provider {
   private resolved: Provider | null = null;
   private config: janexConfig;
   private detectedMode: 'openai' | 'anthropic' | null = null;
+  private overlay: ProviderOverlay | null = null;
 
-  constructor(config: janexConfig) {
+  constructor(config: janexConfig, overlay?: ProviderOverlay | null) {
     this.config = config;
+    this.overlay = overlay ?? getProviderOverlay(config.provider);
     const detected = detectApiModeForUrl(config.baseUrl || '');
     if (detected === 'anthropic') {
       this.detectedMode = 'anthropic';
@@ -854,17 +884,17 @@ export class AutoDetectProvider implements Provider {
 
     const apiStyle = (this.config as any).apiStyle as string | undefined;
     if (apiStyle === 'anthropic') {
-      this.resolved = new AnthropicProvider(this.config);
+      this.resolved = new AnthropicProvider(this.config, this.overlay);
       return this.resolved.chat(messages, tools);
     }
     if (apiStyle === 'openai') {
-      this.resolved = new OpenAIProvider(this.config);
+      this.resolved = new OpenAIProvider(this.config, this.overlay);
       return this.resolved.chat(messages, tools);
     }
 
     if (this.detectedMode === 'anthropic') {
       try {
-        this.anthropic = new AnthropicProvider(this.config);
+        this.anthropic = new AnthropicProvider(this.config, this.overlay);
         const result = await this.anthropic.chat(messages, tools);
         this.resolved = this.anthropic;
         this.name = 'custom (anthropic-compat)';
@@ -875,14 +905,14 @@ export class AutoDetectProvider implements Provider {
     }
 
     try {
-      this.openai = new OpenAIProvider(this.config);
+      this.openai = new OpenAIProvider(this.config, this.overlay);
       const result = await this.openai.chat(messages, tools);
       this.resolved = this.openai;
       this.name = 'custom (openai-compat)';
       return result;
     } catch {
       try {
-        this.anthropic = new AnthropicProvider(this.config);
+        this.anthropic = new AnthropicProvider(this.config, this.overlay);
         const result = await this.anthropic.chat(messages, tools);
         this.resolved = this.anthropic;
         this.name = 'custom (anthropic-compat)';
@@ -911,28 +941,48 @@ async function detectLocalModelOnce(baseUrl: string): Promise<string> {
 }
 
 export function createProvider(config: janexConfig): Provider {
+  const normalizedProvider = normalizeProviderName(config.provider);
+  const overlay = getProviderOverlay(normalizedProvider);
   const resolvedStyle = resolveApiStyle(config);
 
-  switch (config.provider) {
+  // Map normalized provider to janex internal provider type
+  let providerType: 'anthropic' | 'openai' | 'custom' | 'custom-anthropic' = 'openai';
+  if (normalizedProvider === 'anthropic' || overlay?.transport === 'anthropic_messages') {
+    providerType = 'anthropic';
+  } else if (normalizedProvider === 'custom-anthropic') {
+    providerType = 'custom-anthropic';
+  } else if (
+    normalizedProvider === 'openai' ||
+    overlay?.transport === 'codex_responses' ||
+    overlay?.transport === 'openai_chat'
+  ) {
+    providerType = 'openai';
+  } else if (normalizedProvider === 'custom') {
+    providerType = 'custom';
+  }
+
+  switch (providerType) {
     case 'anthropic':
-      return new AnthropicProvider(config);
+      return new AnthropicProvider(config, overlay);
     case 'openai':
-      return new OpenAIProvider(config);
+      return new OpenAIProvider(config, overlay);
     case 'custom': {
       if (resolvedStyle === 'anthropic') {
-        return new AnthropicProvider(config);
+        return new AnthropicProvider(config, overlay);
       }
       if (resolvedStyle === 'openai') {
-        return new OpenAIProvider(config);
+        return new OpenAIProvider(config, overlay);
       }
-      return new AutoDetectProvider(config);
+      return new AutoDetectProvider(config, overlay);
     }
     case 'custom-anthropic':
-      return new AnthropicProvider(config);
+      return new AnthropicProvider(config, overlay);
     default:
-      return new OpenAIProvider(config);
+      return new OpenAIProvider(config, overlay);
   }
 }
+
+export { normalizeProviderName, getProviderOverlay, PROVIDER_ALIASES } from '../utils/provider-detect.js';
 
 // ─── Message Sanitizer ────────────────────────────────────────────────────
 

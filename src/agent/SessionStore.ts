@@ -1391,6 +1391,62 @@ export class SessionStore {
     };
   }
 
+  resumeLazy(sessionId: string): SessionMeta | null {
+    this.refreshForRead();
+    const stmt = this.db.prepare(`
+      SELECT id, title, platform, user_key, channel_id, model, provider, cwd, status, created_at, updated_at, last_message_at
+      FROM sessions WHERE id = ?
+    `);
+    stmt.bind([sessionId]);
+    if (!stmt.step()) {
+      stmt.free();
+      return null;
+    }
+    const row = stmt.getAsObject();
+    stmt.free();
+    return {
+      id: String(row.id || sessionId),
+      title: row.title ? String(row.title) : undefined,
+      platform: row.platform ? String(row.platform) : undefined,
+      userKey: row.user_key ? String(row.user_key) : undefined,
+      model: row.model ? String(row.model) : undefined,
+      provider: row.provider ? String(row.provider) : undefined,
+      cwd: row.cwd ? String(row.cwd) : undefined,
+      status: row.status ? String(row.status) : undefined,
+    };
+  }
+
+  resumeCold(sessionId: string): { meta: SessionMeta; messages: Message[] } | null {
+    const meta = this.resumeLazy(sessionId);
+    if (!meta) return null;
+    const messages = this.readSession(sessionId);
+    return { meta, messages };
+  }
+
+  resumeEager(sessionId: string): { meta: SessionMeta; messages: Message[]; stats: { messageCount: number; toolEventCount: number } } | null {
+    const meta = this.resumeLazy(sessionId);
+    if (!meta) return null;
+    const messages = this.readSession(sessionId);
+    const toolCountStmt = this.db.prepare(`
+      SELECT COUNT(*) AS count FROM tool_events WHERE session_id = ?
+    `);
+    toolCountStmt.bind([sessionId]);
+    let toolEventCount = 0;
+    if (toolCountStmt.step()) {
+      const row = toolCountStmt.getAsObject();
+      toolEventCount = Number(row.count || 0);
+    }
+    toolCountStmt.free();
+    return {
+      meta,
+      messages,
+      stats: {
+        messageCount: messages.length,
+        toolEventCount,
+      },
+    };
+  }
+
   saveSnapshot(sessionId: string, messages: Message[], meta: Partial<SessionMeta> = {}): void {
     this.withWriteLock(() => {
       const ts = nowIso();
