@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import readline from 'readline';
 import { readClipboard, writeClipboard } from './Clipboard.js';
 import { safeDisplayText } from '../utils/terminal-sanitize.js';
+import { miniLogo } from '../utils/ascii-logo.js';
 
 const teal = chalk.hex('#fab283');
 const orange = chalk.hex('#9d7cd8');
@@ -13,6 +14,7 @@ const border = chalk.hex('#484848');
 const bg = chalk.bgHex('#1e1e1e');
 
 const panelBg = chalk.bgHex('#141414');
+const janexAccent = chalk.hex('#56b6c2');
 let setupScreenActive = false;
 
 export function enterSetupScreen(): void {
@@ -51,8 +53,17 @@ function boxWidth(kind: 'input' | 'selector' | 'confirm' = 'input'): number {
   return Math.min(max, Math.max(min, full - 4));
 }
 
-export function drawBox(lines: string[], kind: 'input' | 'selector' | 'confirm' = 'input'): void {
+function drawJanexHeader(stepLabel?: string): void {
+  const mark = miniLogo();
+  const stepText = stepLabel ? ` ${dim('·')} ${dim(stepLabel)}` : '';
+  console.log(janexAccent(mark + stepText));
+  console.log(dim('  janex agent setup'));
+  console.log();
+}
+
+export function drawBox(lines: string[], kind: 'input' | 'selector' | 'confirm' = 'input', stepLabel?: string): void {
   const width = boxWidth(kind);
+  if (stepLabel) drawJanexHeader(stepLabel);
   const top = border('╭' + '─'.repeat(width) + '╮');
   const bot = border('╰' + '─'.repeat(width) + '╯');
   console.log(top);
@@ -72,6 +83,7 @@ export function drawInputScreen(opts: {
   label: string;
   masked?: boolean;
   extra?: string[];
+  step?: string;
 }): Promise<string> {
   return new Promise((resolve) => {
     clearSetupScreen();
@@ -82,7 +94,7 @@ export function drawInputScreen(opts: {
     if (opts.extra) {
       lines.push('', ...opts.extra);
     }
-    drawBox(lines, 'input');
+    drawBox(lines, 'input', opts.step);
     console.log();
     console.log(`  ${teal('  ' + opts.label)}`);
 
@@ -377,6 +389,7 @@ export function drawSelector(opts: {
   allowSkip?: boolean;
   multi: true;
   extra?: string[];
+  step?: string;
 }): Promise<string[]>;
 export function drawSelector(opts: {
   title: string;
@@ -384,6 +397,7 @@ export function drawSelector(opts: {
   allowSkip?: boolean;
   multi?: false;
   extra?: string[];
+  step?: string;
 }): Promise<string>;
 export function drawSelector(opts: {
   title: string;
@@ -391,6 +405,7 @@ export function drawSelector(opts: {
   allowSkip?: boolean;
   multi?: boolean;
   extra?: string[];
+  step?: string;
 }): Promise<string | string[]> {
   return new Promise((resolve) => {
     const stdin = process.stdin;
@@ -466,7 +481,7 @@ export function drawSelector(opts: {
             )
           : dim('  ↑/↓ or tab move · enter confirm · mouse click · esc back'),
       );
-      drawBox(lines, 'selector');
+      drawBox(lines, 'selector', opts.step);
     };
 
     const move = (delta: number) => {
@@ -742,6 +757,7 @@ function parseMouse(
 export function drawConfirm(opts: {
   title: string;
   message: string;
+  step?: string;
 }): Promise<boolean> {
   return new Promise((resolve) => {
     console.log();
@@ -752,7 +768,7 @@ export function drawConfirm(opts: {
       '',
       `  ${green('y')} ${dim('Yes')}    ${orange('n')} ${dim('No')}`,
     ];
-    drawBox(lines, 'input');
+    drawBox(lines, 'confirm', opts.step);
     console.log();
 
     const stdin = process.stdin;

@@ -56,14 +56,14 @@ export async function runSetup(continueFrom?: boolean): Promise<janexConfig> {
         ' later.\n',
     );
 
-    // Step 0: Terminal theme
+    // Step 1 of 6: Terminal theme
     const themeChoice = state.themeChoice?.name
       ? state.themeChoice
-      : await stepTheme(existingConfig.themeName, existingConfig.accentColor);
+      : await stepTheme(existingConfig.themeName, existingConfig.accentColor, '1 / 6');
 
-    // Step 1: Provider
+    // Step 2 of 6: Provider
     const provider =
-      state.provider || (await stepProvider(existingSetupProvider));
+      state.provider || (await stepProvider(existingSetupProvider, '2 / 6'));
     if (provider === '__skip__' || provider === '__back__') {
       saveSetupState({ step: 'provider' });
       return await loadConfigOrDefault();
@@ -80,20 +80,20 @@ export async function runSetup(continueFrom?: boolean): Promise<janexConfig> {
       provider === 'custom-anthropic' ||
       provider === 'custom-auto';
     if (isCustom && !baseUrl) {
-      baseUrl = await stepBaseUrl(provider);
+      baseUrl = await stepBaseUrl(provider, '3 / 6');
       if (baseUrl === '__skip__' || baseUrl === '__back__') {
         saveSetupState({ step: 'baseUrl', provider });
         return await loadConfigOrDefault();
       }
     }
 
-    // Step 3: API Key — always offer for custom providers and provider changes
+    // Step 4: API Key — always offer for custom providers and provider changes
     let apiKey = state.apiKey || (providerChanged ? '' : existingConfig.apiKey);
     if (!apiKey || isCustom || providerChanged) {
       const existingHint = apiKey
         ? `\nCurrent key: ${apiKey.slice(0, 8)}...${apiKey.slice(-4)}\nLeave blank to keep existing key.`
         : '';
-      const key = await stepApiKey(provider, existingHint);
+      const key = await stepApiKey(provider, existingHint, '4 / 6');
       if (key === '__skip__' || key === '__back__') {
         if (apiKey) {
           drawInfo('Keeping existing API key.\n');
@@ -106,30 +106,31 @@ export async function runSetup(continueFrom?: boolean): Promise<janexConfig> {
       }
     }
 
-    // Step 4: Model
+    // Step 5: Model
     const model =
-      state.model || (await stepModel(provider, existingConfig.model));
+      state.model || (await stepModel(provider, existingConfig.model, '5 / 11'));
     if (model === '__skip__' || model === '__back__') {
       saveSetupState({ step: 'model', provider, baseUrl, apiKey });
       return await loadConfigOrDefault();
     }
 
-    // Step 5: Gateway — always offer to set/update tokens
-    const gateway = await stepGateway(state.gateway || existingConfig.gateway);
+    // Step 6: Gateway — always offer to set/update tokens
+    const gateway = await stepGateway(state.gateway || existingConfig.gateway, '6 / 11');
 
     // Step 7: Features
-    const features = await stepFeatures(existingConfig.features);
+    const features = await stepFeatures(existingConfig.features, '7 / 11');
 
     // Step 8: Account integrations
-    const integrations = await stepIntegrations(existingConfig.integrations);
+    const integrations = await stepIntegrations(existingConfig.integrations, '8 / 11');
 
     // Step 9: Plugin/skill loading
-    const plugins = await stepPlugins(existingConfig.plugins);
+    const plugins = await stepPlugins(existingConfig.plugins, '9 / 11');
 
     // Step 10: Captcha solving method
     const captchaAudio = await stepCaptcha(
       existingConfig.captchaAudio,
       existingConfig.groqApiKey,
+      '10 / 11',
     );
 
     // Step 11: Web search engine
@@ -137,6 +138,7 @@ export async function runSetup(continueFrom?: boolean): Promise<janexConfig> {
       existingConfig.searchEngine,
       existingConfig.searchApiKey,
       existingConfig.searchBaseUrl,
+      '11 / 11',
     );
 
     const resolvedProvider =
@@ -205,6 +207,7 @@ export async function runSetup(continueFrom?: boolean): Promise<janexConfig> {
 async function stepTheme(
   existingName?: janexConfig['themeName'],
   existingAccent?: string,
+  step?: string,
 ): Promise<{
   name: NonNullable<janexConfig['themeName']>;
   accent: string;
@@ -213,6 +216,7 @@ async function stepTheme(
     title: 'Terminal UI Theme',
     items: [{ id: 'janex', label: 'janex Cyan + Orange', desc: 'Default theme' }],
     allowSkip: true,
+    step,
     extra: existingName
       ? [`Current theme: ${existingName}`, 'Skip keeps current theme.']
       : undefined,
@@ -227,7 +231,7 @@ async function stepTheme(
   return palette[choice] || palette.janex;
 }
 
-async function stepProvider(existing?: string): Promise<string> {
+async function stepProvider(existing?: string, step?: string): Promise<string> {
   const choice = await drawSelector({
     title: 'LLM Provider',
     items: [
@@ -273,6 +277,7 @@ async function stepProvider(existing?: string): Promise<string> {
       },
     ],
     allowSkip: true,
+    step,
     extra: existing
       ? [
           `Current provider: ${existing}`,
@@ -288,6 +293,7 @@ async function stepProvider(existing?: string): Promise<string> {
 async function stepApiKey(
   provider: string,
   existingHint?: string,
+  step?: string,
 ): Promise<string> {
   const providerNames: Record<string, string> = {
     openai: 'OpenAI',
@@ -316,13 +322,14 @@ async function stepApiKey(
     label: 'API Key:',
     masked: true,
     extra: hintLines,
+    step,
   });
 
   if (!key || key === '__back__') return '__skip__';
   return key;
 }
 
-async function stepBaseUrl(provider: string): Promise<string | undefined> {
+async function stepBaseUrl(provider: string, step?: string): Promise<string | undefined> {
   const apiStyle: janexConfig['apiStyle'] =
     provider === 'custom-openai'
       ? 'openai'
@@ -354,6 +361,7 @@ async function stepBaseUrl(provider: string): Promise<string | undefined> {
     title: 'Base URL',
     items,
     allowSkip: true,
+    step,
     extra: [
       'Custom URL is selected first so your custom gateway endpoint is not skipped.',
     ],
@@ -368,6 +376,7 @@ async function stepBaseUrl(provider: string): Promise<string | undefined> {
         hint: 'Examples: https://api.openai.com/v1, localhost:1234/v1, https://your-gateway/openai/v1',
         label: 'Base URL:',
         masked: false,
+        step,
       });
 
       if (!url || url === '__back__') return '__skip__';
@@ -389,6 +398,7 @@ async function stepBaseUrl(provider: string): Promise<string | undefined> {
 async function stepModel(
   provider: string,
   existingModel?: string,
+  step?: string,
 ): Promise<string> {
   const models: Record<string, { id: string; label: string; desc?: string }[]> =
     {
@@ -443,6 +453,7 @@ async function stepModel(
     title: 'Model',
     items,
     allowSkip: true,
+    step,
     extra: existingModel
       ? [`Current model: ${existingModel}`, 'Skip keeps the current model.']
       : undefined,
@@ -463,6 +474,7 @@ async function stepModel(
         : 'Enter the exact model ID your provider supports',
       label: 'Model ID:',
       masked: false,
+      step,
     });
     return !model || model === '__back__' ? existingModel || 'gpt-4o' : model;
   }
@@ -472,6 +484,7 @@ async function stepModel(
 
 async function stepGateway(
   existing?: janexConfig['gateway'],
+  step?: string,
 ): Promise<janexConfig['gateway']> {
   const existingList: string[] = [];
   if (existing?.discord?.token)
@@ -521,6 +534,7 @@ async function stepGateway(
       },
     ],
     allowSkip: true,
+    step,
     extra,
   });
 
@@ -543,6 +557,7 @@ async function stepGateway(
         hint: 'Get from discord.com/developers/applications',
         label: 'Token:',
         masked: true,
+        step,
       });
       if (token && token !== '__back__') {
         gateway.discord = { enabled: true, token };
@@ -551,6 +566,7 @@ async function stepGateway(
           hint: 'Comma-separated Discord user IDs. Only these users can control the bot.\nLeave blank to allow everyone (not recommended for VPS bots).\nFind your ID: right-click your name → Copy User ID (enable Developer Mode in settings).',
           label: 'User IDs:',
           masked: false,
+          step,
         });
         if (userIds && userIds !== '__back__') {
           gateway.discord!.allowedUsers = userIds
@@ -566,6 +582,7 @@ async function stepGateway(
         hint: 'Get from @BotFather on Telegram',
         label: 'Token:',
         masked: true,
+        step,
       });
       if (token && token !== '__back__') {
         gateway.telegram = { enabled: true, token };
@@ -574,6 +591,7 @@ async function stepGateway(
           hint: 'Comma-separated Telegram user IDs. Only these users can control the bot.\nLeave blank to allow everyone.\nFind your ID: message @userinfobot or @getmyid_bot.',
           label: 'User IDs:',
           masked: false,
+          step,
         });
         if (userIds && userIds !== '__back__') {
           gateway.telegram!.allowedUsers = userIds
@@ -591,6 +609,7 @@ async function stepGateway(
         hint: 'Comma-separated phone numbers with country code (e.g. +6281234567890).\nOnly these numbers can control the bot. Leave blank to allow everyone.',
         label: 'Phone numbers:',
         masked: false,
+        step,
       });
       if (phoneIds && phoneIds !== '__back__') {
         gateway.whatsapp.allowedUsers = phoneIds
@@ -604,7 +623,7 @@ async function stepGateway(
   return gateway;
 }
 
-async function stepFeatures(existing?: string[]): Promise<string[]> {
+async function stepFeatures(existing?: string[], step?: string): Promise<string[]> {
   const selected = await drawSelector({
     title: 'Extra Features',
     items: [
@@ -643,6 +662,7 @@ async function stepFeatures(existing?: string[]): Promise<string[]> {
     ],
     allowSkip: true,
     multi: true,
+    step,
     extra: existing?.length
       ? [
           `Current features: ${existing.join(', ')}`,
@@ -657,6 +677,7 @@ async function stepFeatures(existing?: string[]): Promise<string[]> {
 
 async function stepIntegrations(
   existing?: janexConfig['integrations'],
+  step?: string,
 ): Promise<janexConfig['integrations']> {
   const selected = await drawSelector({
     title: 'Connect Accounts (Optional)',
@@ -674,6 +695,7 @@ async function stepIntegrations(
     ],
     allowSkip: true,
     multi: true,
+    step,
     extra: existing
       ? [
           `Current integrations: ${Object.keys(existing).join(', ') || 'none'}`,
@@ -711,6 +733,7 @@ async function stepIntegrations(
         },
       ],
       allowSkip: true,
+      step,
     });
 
     if (method === 'token') {
@@ -719,6 +742,7 @@ async function stepIntegrations(
         hint: 'Paste a token with repo scope if you want janex to use GitHub tools directly',
         label: 'Token:',
         masked: true,
+        step,
       });
       if (token && token !== '__back__')
         integrations.github = { enabled: true, auth: 'token', token };
@@ -736,12 +760,14 @@ async function stepIntegrations(
       hint: 'Optional. janex email tool uses himalaya or msmtp under the hood.',
       label: 'Email:',
       masked: false,
+      step,
     });
     const appPassword = await drawInputScreen({
       title: 'Gmail App Password (Optional)',
       hint: 'Leave blank if you already configured himalaya/msmtp.',
       label: 'App Password:',
       masked: true,
+      step,
     });
     integrations.gmail = {
       enabled: true,
@@ -756,6 +782,7 @@ async function stepIntegrations(
 
 async function stepPlugins(
   existing?: janexConfig['plugins'],
+  step?: string,
 ): Promise<janexConfig['plugins']> {
   const selected = await drawSelector({
     title: 'Plugins and Skills',
@@ -778,6 +805,7 @@ async function stepPlugins(
     ],
     allowSkip: true,
     multi: true,
+    step,
     extra: existing
       ? [
           'Current plugin settings detected.',
@@ -797,6 +825,7 @@ async function stepPlugins(
       hint: 'Enter a git URL/path now, or leave blank and use /plugin install later.',
       label: 'Source:',
       masked: false,
+      step,
     });
     if (source && source !== '__back__') sources.push(source);
   }
@@ -814,6 +843,7 @@ async function stepPlugins(
 async function stepCaptcha(
   existingMode?: janexConfig['captchaAudio'],
   existingGroqApiKey?: string,
+  step?: string,
 ): Promise<{
   mode: janexConfig['captchaAudio'];
   groqApiKey?: string;
@@ -839,6 +869,7 @@ async function stepCaptcha(
       },
     ],
     allowSkip: true,
+    step,
     extra: existingMode
       ? [
           `Current CAPTCHA mode: ${existingMode}`,
@@ -875,6 +906,7 @@ async function stepCaptcha(
         },
       ],
       allowSkip: true,
+      step,
     });
 
     if (audioMethod === 'groq') {
@@ -886,6 +918,7 @@ async function stepCaptcha(
         hint: 'Paste your Groq API key (gsk_...). Get free at console.groq.com\nYou Can Change This At ~/.janex/config.yaml',
         label: 'API Key:',
         masked: true,
+        step,
       });
       if (groqKey && groqKey !== '__back__') {
         return { mode, useGroqAudio: true, groqApiKey: groqKey };
@@ -909,6 +942,7 @@ async function stepSearchEngine(
   existingEngine?: janexConfig['searchEngine'],
   existingApiKey?: string,
   existingBaseUrl?: string,
+  step?: string,
 ): Promise<{
   engine: janexConfig['searchEngine'];
   apiKey?: string;
@@ -939,6 +973,7 @@ async function stepSearchEngine(
       },
     ],
     allowSkip: true,
+    step,
     extra: existingEngine
       ? [
           `Current search engine: ${existingEngine}`,
@@ -971,6 +1006,7 @@ async function stepSearchEngine(
       hint: 'Leave blank to use built-in public fallbacks.\nExample: https://search.example.com or http://localhost:8080',
       label: 'Base URL:',
       masked: false,
+      step,
     });
     if (instance && instance !== '__back__') {
       return { engine: 'searxng', baseUrl: instance.replace(/\/+$/, '') };
@@ -995,6 +1031,7 @@ async function stepSearchEngine(
       '\nLeave blank to use DDG instead.',
     label: 'API Key:',
     masked: true,
+    step,
   });
 
   if (apiKey && apiKey !== '__back__') {
