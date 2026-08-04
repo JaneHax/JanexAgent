@@ -1208,9 +1208,9 @@ export class AutoDetectProvider implements Provider {
         const hint = this.config.baseUrl
           ? `\n\nBase URL: ${this.config.baseUrl}`
           : '';
-        throw new Error(
-          `Auto-detect failed for ${this.config.baseUrl || 'custom endpoint'}. Set apiStyle to 'openai' or 'anthropic' explicitly. Last error: ${e.message}${hint}`
-        );
+      throw new Error(
+        `Auto-detect failed for ${this.config.baseUrl || 'custom endpoint'}. Set apiStyle to 'openai' or 'anthropic' explicitly. Last error: ${e.message}${hint}`
+      );
       }
     }
   }
