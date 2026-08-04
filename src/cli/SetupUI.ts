@@ -38,7 +38,21 @@ function clearSetupScreen(): void {
   else console.clear();
 }
 
-export function drawBox(lines: string[], width = 60): void {
+function getTerminalWidth(): number {
+  const cols = (process.stdout as any).columns;
+  if (typeof cols === 'number' && Number.isFinite(cols) && cols > 0) return Math.floor(cols);
+  return 80;
+}
+
+function boxWidth(kind: 'input' | 'selector' | 'confirm' = 'input'): number {
+  const full = getTerminalWidth();
+  const max = kind === 'selector' ? 76 : 64;
+  const min = kind === 'selector' ? 48 : 40;
+  return Math.min(max, Math.max(min, full - 4));
+}
+
+export function drawBox(lines: string[], kind: 'input' | 'selector' | 'confirm' = 'input'): void {
+  const width = boxWidth(kind);
   const top = border('╭' + '─'.repeat(width) + '╮');
   const bot = border('╰' + '─'.repeat(width) + '╯');
   console.log(top);
@@ -68,7 +82,7 @@ export function drawInputScreen(opts: {
     if (opts.extra) {
       lines.push('', ...opts.extra);
     }
-    drawBox(lines, 64);
+    drawBox(lines, 'input');
     console.log();
     console.log(`  ${teal('  ' + opts.label)}`);
 
@@ -402,7 +416,7 @@ export function drawSelector(opts: {
       }
     };
 
-    const cleanup = () => {
+    let cleanup = () => {
       clearEscTimer();
       stdin.removeListener('data', onData);
       stdin.removeListener('keypress', onKeypress as any);
@@ -452,7 +466,7 @@ export function drawSelector(opts: {
             )
           : dim('  ↑/↓ or tab move · enter confirm · mouse click · esc back'),
       );
-      drawBox(lines, 76);
+      drawBox(lines, 'selector');
     };
 
     const move = (delta: number) => {
@@ -684,6 +698,20 @@ export function drawSelector(opts: {
     };
 
     repaint();
+    if (process.stdout.isTTY) {
+      const onResize = () => repaint();
+      process.stdout.on('resize', onResize);
+      cleanup = () => {
+        clearEscTimer();
+        stdin.removeListener('data', onData);
+        stdin.removeListener('keypress', onKeypress as any);
+        disableMouse();
+        if (stdin.isTTY && !wasRaw) stdin.setRawMode(false);
+        if (process.stdout.isTTY) process.stdout.write('\x1b[?2004l');
+        process.stdout.write('\n');
+        process.stdout.off('resize', onResize);
+      };
+    }
     stdin.on('keypress', onKeypress);
     stdin.on('data', onData);
   });
@@ -724,7 +752,7 @@ export function drawConfirm(opts: {
       '',
       `  ${green('y')} ${dim('Yes')}    ${orange('n')} ${dim('No')}`,
     ];
-    drawBox(lines, 64);
+    drawBox(lines, 'input');
     console.log();
 
     const stdin = process.stdin;

@@ -261,7 +261,7 @@ function showStatus(): void {
       return `  ${icon} ${s.name} ${state}${toolInfo}${err}`;
     }),
   ];
-  drawBox(lines, 64);
+  drawBox(lines, 'input');
   console.log();
 }
 
