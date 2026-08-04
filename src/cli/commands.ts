@@ -1031,6 +1031,11 @@ export function auditCommandCoverage(
   };
 }
 
+export function getAllCommands(skillCommands?: SlashCommand[]): SlashCommand[] {
+  const skills = skillCommands || [];
+  return [...baseCommands, ...skills];
+}
+
 export function formatCommandHelp(commands: SlashCommand[]): string {
   const groups = new Map<string, SlashCommand[]>();
   for (const command of commands.filter((c) => !c.name.startsWith('tool:'))) {

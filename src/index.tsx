@@ -269,12 +269,30 @@ async function main() {
   process.on('exit', () => {
     void terminalLifecycle.dispose();
   });
-  process.on('uncaughtException', (err) => {
-    void terminalLifecycle.dispose().finally(() => {
-      console.error(err);
-      process.exit(1);
+
+  try {
+    const fs = await import('fs');
+    const path = await import('path');
+    const os = await import('os');
+    const logDir = path.join(os.homedir(), '.janex', 'logs');
+    if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+    const logFile = path.join(logDir, 'crash.log');
+    const logCrash = (label: string, err: any) => {
+      const entry = `[${new Date().toISOString()}] ${label}: ${err?.stack || err?.message || String(err)}\n`;
+      fs.appendFileSync(logFile, entry);
+    };
+    process.on('uncaughtException', (err) => {
+      logCrash('uncaughtException', err);
+      void terminalLifecycle.dispose().finally(() => {
+        console.error(err);
+        process.exit(1);
+      });
     });
-  });
+    process.on('unhandledRejection', (reason) => {
+      logCrash('unhandledRejection', reason);
+      console.error('Unhandled rejection:', reason);
+    });
+  } catch {}
 
   if (args.some((arg) => arg === '-h' || arg === '--help' || arg === 'help')) {
     process.stdout.write(`janex Agent\n\nUsage:\n  janex                         Start interactive session\n  janex --non-interactive <prompt>\n  janex -p <prompt>             Run one prompt, print the answer, exit\n  janex setup                   Configure provider and model\n  janex gateway                 Start messaging gateway\n`);
@@ -420,11 +438,22 @@ async function main() {
     10 * 60 * 1000
   );
 
+  // Background skill curator every 7 days
+  const { Curator } = await import('./agent/Curator.js');
+  const curator = new Curator();
+  const curatorTimer = setInterval(
+    () => {
+      curator.run().catch(() => {});
+    },
+    24 * 60 * 60 * 1000
+  );
+
   let memorySyncedOnShutdown = false;
   process.once('beforeExit', async () => {
     if (memorySyncedOnShutdown) return;
     memorySyncedOnShutdown = true;
     clearInterval(consolidateTimer);
+    clearInterval(curatorTimer);
     try {
       await bgMemory.sync();
     } catch {}

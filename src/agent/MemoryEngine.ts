@@ -102,13 +102,42 @@ function withinCharBudget(entries: string[], next: string, limit: number): boole
   return combined.length <= limit;
 }
 
+function withFileLock(file: string, fn: () => void): void {
+  const lockPath = `${file}.lock`;
+  const deadline = Date.now() + 5000;
+  while (true) {
+    try {
+      fs.mkdirSync(lockPath);
+      const token = `${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      fs.writeFileSync(path.join(lockPath, 'owner.json'), JSON.stringify({ pid: process.pid, token }));
+      try { fn(); } finally {
+        try { fs.rmSync(lockPath, { recursive: true, force: true }); } catch {}
+      }
+      return;
+    } catch (e: any) {
+      if (e?.code !== 'EEXIST') throw e;
+      try {
+        const ownerRaw = fs.readFileSync(path.join(lockPath, 'owner.json'), 'utf-8').trim();
+        const owner = JSON.parse(ownerRaw);
+        process.kill(Number(owner.pid), 0);
+      } catch {
+        try { fs.rmSync(lockPath, { recursive: true, force: true }); } catch {}
+        continue;
+      }
+      if (Date.now() >= deadline) throw new Error(`Memory file lock timeout: ${file}`);
+    }
+  }
+}
+
 function appendEntry(file: string, entry: string, limit: number): boolean {
   const clean = stripCredentials(entry).trim();
   if (!clean || clean.length > Math.floor(limit * 0.7)) return false;
-  const entries = readEntries(file);
-  if (entries.includes(clean)) return true;
-  if (!withinCharBudget(entries, clean, limit)) return false;
-  fs.writeFileSync(file, [...entries, clean].join(ENTRY_DELIMITER), 'utf-8');
+  withFileLock(file, () => {
+    const entries = readEntries(file);
+    if (entries.includes(clean)) return;
+    if (!withinCharBudget(entries, clean, limit)) return;
+    fs.writeFileSync(file, [...entries, clean].join(ENTRY_DELIMITER), 'utf-8');
+  });
   return true;
 }
 
@@ -524,41 +553,66 @@ Rules:
       .map((term) => term.trim())
       .filter(Boolean);
     if (terms.length === 0) return '';
-    const rawLines = fs.existsSync(RAW_FILE)
-      ? fs
-          .readFileSync(RAW_FILE, 'utf-8')
-          .split('\n')
-          .map((line) => line.trim())
-          .filter(Boolean)
-      : [];
+    const now = Date.now();
+    const scoredLines = (lines: { text: string; ts?: number }[], source: string) =>
+      lines.map((item) => {
+        const lower = item.text.toLowerCase();
+        let score = terms.reduce((total, term) => total + (lower.includes(term) ? 1 : 0), 0);
+        if (score === 0) return null;
+        const phrase = terms.join(' ');
+        if (lower.includes(phrase)) score += 3;
+        if (item.ts) {
+          const ageDays = (now - item.ts) / (1000 * 60 * 60 * 24);
+          score += Math.max(0, 2 - ageDays / 30);
+        }
+        if (source === 'USER') score += 1;
+        if (source === 'SUMMARY') score += 0.5;
+        return { text: `${source}: ${item.text}`, score };
+      })
+      .filter((item): item is { text: string; score: number } => item !== null);
+
+    const withTimestamp = (file: string, source: string) => {
+      if (!fs.existsSync(file)) return [];
+      const raw = fs.readFileSync(file, 'utf-8');
+      const lines = raw
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean);
+      return lines.map((line) => {
+        const tsMatch = line.match(/^## ([\dT:+-]+)/);
+        return { text: line, ts: tsMatch ? new Date(tsMatch[1]).getTime() : undefined };
+      });
+    };
+
+    const userLines = withTimestamp(USER_FILE, 'USER');
+    const memoryLines = withTimestamp(MEMORY_FILE, 'MEMORY');
     const legacyLines = fs.existsSync(SUMMARY_FILE)
       ? fs
           .readFileSync(SUMMARY_FILE, 'utf-8')
           .split('\n')
           .map((line) => line.trim())
           .filter(Boolean)
+          .map((line) => ({ text: line }))
       : [];
-    const lines = [
-      ...readEntries(USER_FILE).map((entry) => `USER: ${entry}`),
-      ...readEntries(MEMORY_FILE).map((entry) => `MEMORY: ${entry}`),
-      ...legacyLines.map((entry) => `SUMMARY: ${entry}`),
-      ...rawLines.map((entry) => `RAW: ${entry}`),
+    const rawLines = fs.existsSync(RAW_FILE)
+      ? fs
+          .readFileSync(RAW_FILE, 'utf-8')
+          .split('\n')
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .map((line) => ({ text: line }))
+      : [];
+
+    const all = [
+      ...scoredLines(userLines, 'USER'),
+      ...scoredLines(memoryLines, 'MEMORY'),
+      ...scoredLines(legacyLines, 'SUMMARY'),
+      ...scoredLines(rawLines, 'RAW'),
     ];
 
-    const scored = lines
-      .map((line) => {
-        const lower = line.toLowerCase();
-        const score = terms.reduce((total, term) => total + (lower.includes(term) ? 1 : 0), 0);
-        return { line, score };
-      })
-      .filter((item) => item.score > 0)
-      .sort((a, b) => b.score - a.score);
-
-    if (scored.length === 0) return '';
-    return scored
-      .slice(0, 20)
-      .map((item) => item.line)
-      .join('\n');
+    all.sort((a, b) => b.score - a.score);
+    if (all.length === 0) return '';
+    return all.slice(0, 20).map((item) => item.text).join('\n');
   }
 
   getStats(): { summarySize: number; rawSize: number; memorySize: number; sessionCount: number } {

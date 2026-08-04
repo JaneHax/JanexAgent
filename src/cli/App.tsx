@@ -40,8 +40,10 @@ import {
   findCommand,
   formatCommandHelp,
   parseSlash,
+  getAllCommands,
 } from './commands.js';
 import { AgentLoop } from '../agent/AgentLoop.js';
+import { scanSkills, getSkillSlashCommands, buildSkillInvocationMessage, type SkillManifest } from '../agent/SkillsLoader.js';
 import { renderToolEnd } from '../agent/ToolEventRenderer.js';
 import type { janexConfig } from '../agent/Config.js';
 import { CONFIG_PATH, loadConfig, saveConfig } from '../agent/Config.js';
@@ -471,16 +473,17 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
   const toolCount = registry.list().length;
   const skills = useMemo(() => {
     const root = process.env.janex_HOME || process.cwd();
-    return loadSkillsFromDir(path.join(root, 'skills'));
+    return scanSkills();
   }, []);
   const skillCount = skills.length;
+  const skillSlashCommands = useMemo(() => getSkillSlashCommands(skills), [skills]);
   const commands = useMemo(
-    () => createSlashCommands({ toolCount, skillCount, registry }),
-    [toolCount, skillCount, registry]
+    () => getAllCommands(skillSlashCommands).filter((c) => !c.hidden),
+    [skillSlashCommands]
   );
   const allCommands = useMemo(
-    () => createSlashCommands({ toolCount, skillCount, registry }, { includeHidden: true }),
-    [toolCount, skillCount, registry]
+    () => getAllCommands(skillSlashCommands),
+    [skillSlashCommands]
   );
 
   useEffect(() => {
@@ -750,6 +753,11 @@ export function App({ config, registry, resumeId, cronDaemon }: AppProps) {
             'This command is hidden from help until it has a real implementation.'
           );
           return;
+        }
+
+        const skillMatch = skills.find((s) => s.slug === commandName);
+        if (skillMatch && command?.source === 'skill') {
+          outboundText = buildSkillInvocationMessage(skillMatch, slash.args || '');
         }
 
         if (commandName === 'exit') {

@@ -12,6 +12,8 @@ export interface MemoryLifecycleStatus {
 export class MemoryManager {
   private engine: MemoryEngine;
   private lastSyncAt?: string;
+  private syncQueue: Promise<void> = Promise.resolve();
+  private syncing = false;
 
   constructor(provider?: Provider) {
     this.engine = new MemoryEngine(provider);
@@ -30,10 +32,19 @@ export class MemoryManager {
   }
 
   async sync(): Promise<void> {
-    await this.engine.consolidate();
-    await this.engine.mergeMemories();
-    this.engine.purgeOldSessions();
-    this.lastSyncAt = new Date().toISOString();
+    this.syncQueue = this.syncQueue.then(async () => {
+      if (this.syncing) return;
+      this.syncing = true;
+      try {
+        await this.engine.consolidate();
+        await this.engine.mergeMemories();
+        this.engine.purgeOldSessions();
+        this.lastSyncAt = new Date().toISOString();
+      } finally {
+        this.syncing = false;
+      }
+    });
+    return this.syncQueue;
   }
 
   getStatus(): MemoryLifecycleStatus {

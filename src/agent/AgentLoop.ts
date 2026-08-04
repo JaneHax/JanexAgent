@@ -340,6 +340,7 @@ export class AgentLoop {
   private brain: janexBrain;
   private cachedContextStats?: { signature: string; stats: ContextStats };
   private modelContextInfo: ModelContextInfo;
+  private systemPromptCache = new Map<string, { prompt: string; tokens: number }>();
 
   constructor(config: janexConfig, registry: ToolRegistry) {
     installObserverBusSessionSink();
@@ -383,19 +384,53 @@ export class AgentLoop {
     // static circular dependency (AgentLoop ↔ Memory tool).
     import('../tools/Memory.js').then((m) => m.setMemoryProvider(this.provider)).catch(() => {});
 
-    const systemPrompt = buildSystemPrompt(config, registry.list());
-    this.ledger.set('systemPrompt', countTokens(systemPrompt));
-    this.messages.push({ role: 'system', content: systemPrompt });
+    const { prompt, tokens } = this.getCachedSystemPrompt();
+    this.ledger.set('systemPrompt', tokens);
+    this.messages.push({ role: 'system', content: prompt });
+  }
+
+  private getSystemPromptCacheKey(): string {
+    const toolNames = this.registry.list().map((t) => t.name).sort().join(',');
+    const configKey = [
+      this.config.provider,
+      this.config.model,
+      this.config.baseUrl,
+      this.config.systemPrompt || '',
+      this.config.researchMode || '',
+      this.config.themeName || '',
+      toolNames,
+    ].join('|');
+    return `${this.sessionId}:${cheapHash(configKey)}`;
+  }
+
+  private getCachedSystemPrompt(): { prompt: string; tokens: number } {
+    const key = this.getSystemPromptCacheKey();
+    const cached = this.systemPromptCache.get(key);
+    if (cached) return cached;
+    const prompt = buildSystemPrompt(this.config, this.registry.list());
+    const tokens = countTokens(prompt);
+    const entry = { prompt, tokens };
+    this.systemPromptCache.set(key, entry);
+    if (this.systemPromptCache.size > 32) {
+      const firstKey = this.systemPromptCache.keys().next().value!;
+      this.systemPromptCache.delete(firstKey);
+    }
+    return entry;
+  }
+
+  invalidateSystemPromptCache(): void {
+    this.systemPromptCache.clear();
   }
 
   refreshSystemPrompt(configPatch?: Partial<janexConfig>): void {
     if (configPatch) this.config = { ...this.config, ...configPatch };
-    const systemPrompt = buildSystemPrompt(this.config, this.registry.list());
-    const systemMessage = { role: 'system' as const, content: systemPrompt };
+    this.invalidateSystemPromptCache();
+    const { prompt, tokens } = this.getCachedSystemPrompt();
+    const systemMessage = { role: 'system' as const, content: prompt };
     const firstSystem = this.messages.findIndex((m) => m.role === 'system');
     if (firstSystem >= 0) this.messages[firstSystem] = systemMessage;
     else this.messages.unshift(systemMessage);
-    this.ledger.set('systemPrompt', countTokens(systemPrompt));
+    this.ledger.set('systemPrompt', tokens);
     this.invalidateContextStats();
   }
 
