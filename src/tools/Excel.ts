@@ -25,7 +25,6 @@ export const excelTool: Tool = {
     }
 
     try {
-      // @ts-expect-error optional dependency
       const ExcelJS = await import('exceljs');
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet(sheetName);
