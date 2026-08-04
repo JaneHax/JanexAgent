@@ -22,6 +22,7 @@ import { emailTool } from '../tools/office/email.js';
 import { cloudDeployTool } from '../tools/deploy/cloud.js';
 import { vpsTool } from '../tools/cloud/vps.js';
 import { tradingTool } from '../tools/finance/trading.js';
+import { runBugHunt, installCTFTools } from '../../commands/bug-hunt.js';
 
 export interface ToolDefinition {
   name: string;
@@ -194,6 +195,12 @@ export class ToolRegistry {
 
     this.register('trading_portfolio', (args) => tradingTool.portfolio(args.holdings),
       'Analyze portfolio', { holdings: { type: 'array' } });
+
+    this.register('bug_hunt', (args) => runBugHunt({ target: args.target, category: args.category, authorized: args.authorized }),
+      'Run bug hunting/CTF scan on a target', { target: { type: 'string' }, category: { type: 'string' }, authorized: { type: 'boolean' } });
+
+    this.register('install_ctf_tools', () => installCTFTools(),
+      'Check installed CTF tools and show install instructions', {});
   }
 }
 

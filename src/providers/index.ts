@@ -59,8 +59,9 @@ export interface ToolCall {
 
 export interface ChatResponse {
   text: string;
-  toolCalls: ToolCall[];
-  usage?: { promptTokens: number; completionTokens: number };
+  reasoning?: string;
+  toolCalls?: ToolCall[];
+  usage?: { promptTokens: number; completionTokens: number; totalTokens: number };
   finishReason?: string;
   rawSnippet?: string;
 }
@@ -74,10 +75,15 @@ export interface ToolDef {
   };
 }
 
+export interface StreamChunk {
+  text?: string;
+  reasoning?: string;
+}
+
 export interface Provider {
   name: string;
   chat(messages: Message[], tools?: ToolDef[], signal?: AbortSignal): Promise<ChatResponse>;
-  streamChat?(messages: Message[], tools?: ToolDef[]): AsyncIterable<string>;
+  streamChat?(messages: Message[], tools?: ToolDef[]): AsyncIterable<StreamChunk>;
 }
 
 // ─── Image Utilities ────────────────────────────────────────────────────────
@@ -303,6 +309,7 @@ export class OpenAIProvider implements Provider {
         const reader = fetchRes.body?.getReader();
         const decoder = new TextDecoder();
         let fullContent = '';
+        let reasoningContent = '';
         let lastChunk = null;
         let usage = null;
         let toolCallsMap: Record<number, any> = {};
@@ -330,8 +337,17 @@ export class OpenAIProvider implements Provider {
               }
 
               lastChunk = chunk;
+              // Handle regular content
               if (chunk.choices?.[0]?.delta?.content) {
                 fullContent += chunk.choices[0].delta.content;
+              }
+              // Handle reasoning content (o1/o3 models)
+              if (chunk.choices?.[0]?.delta?.reasoning_content) {
+                reasoningContent += chunk.choices[0].delta.reasoning_content;
+              }
+              // Handle thinking content (some providers use this field)
+              if (chunk.choices?.[0]?.delta?.thinking) {
+                reasoningContent += chunk.choices[0].delta.thinking;
               }
               const tcs = chunk.choices?.[0]?.delta?.tool_calls;
               if (tcs && Array.isArray(tcs)) {
@@ -366,7 +382,11 @@ export class OpenAIProvider implements Provider {
         res = {
           choices: [
             {
-              message: { content: fullContent, tool_calls: finalToolCalls },
+              message: { 
+                content: fullContent, 
+                reasoning_content: reasoningContent || undefined,
+                tool_calls: finalToolCalls 
+              },
               finish_reason: lastChunk?.choices?.[0]?.finish_reason || 'stop',
             },
           ],
@@ -416,10 +436,11 @@ export class OpenAIProvider implements Provider {
     }
   }
 
-  private parseChatResponse(res: OpenAI.ChatCompletion): ChatResponse {
+  private parseChatResponse(res: any): ChatResponse {
     if (!res.choices || res.choices.length === 0) {
       return {
         text: '',
+        reasoning: undefined,
         toolCalls: [],
         usage: undefined,
         finishReason: 'no_choices',
@@ -441,11 +462,13 @@ export class OpenAIProvider implements Provider {
 
     return {
       text: choice.message?.content || '',
+      reasoning: choice.message?.reasoning_content || choice.message?.thinking || undefined,
       toolCalls,
       usage: res.usage
         ? {
             promptTokens: res.usage.prompt_tokens,
             completionTokens: res.usage.completion_tokens,
+            totalTokens: (res.usage.prompt_tokens || 0) + (res.usage.completion_tokens || 0),
           }
         : undefined,
       finishReason: choice.finish_reason || undefined,
@@ -510,6 +533,7 @@ export class OpenAIProvider implements Provider {
         ? {
             promptTokens: data.usage.prompt_tokens,
             completionTokens: data.usage.completion_tokens,
+            totalTokens: (data.usage.prompt_tokens || 0) + (data.usage.completion_tokens || 0),
           }
         : undefined,
     };
@@ -518,10 +542,10 @@ export class OpenAIProvider implements Provider {
   async *streamChat(
     messages: Message[],
     tools?: ToolDef[]
-  ): AsyncIterable<string> {
+  ): AsyncIterable<StreamChunk> {
     if (this.endpointMode === 'completion') {
       const response = await this.completionFallback(messages);
-      yield response.text;
+      yield { text: response.text };
       return;
     }
 
@@ -608,11 +632,11 @@ export class OpenAIProvider implements Provider {
       try {
         res = JSON.parse(text);
       } catch {
-        yield text;
+        yield { text };
         return;
       }
       const content = res.choices?.[0]?.message?.content || '';
-      yield content;
+      yield { text: content };
       return;
     }
 
@@ -641,8 +665,17 @@ export class OpenAIProvider implements Provider {
             continue;
           }
 
+          // Handle regular content
           if (chunk.choices?.[0]?.delta?.content) {
-            yield chunk.choices[0].delta.content;
+            yield { text: chunk.choices[0].delta.content };
+          }
+          // Handle reasoning content (o1/o3 models)
+          if (chunk.choices?.[0]?.delta?.reasoning_content) {
+            yield { reasoning: chunk.choices[0].delta.reasoning_content };
+          }
+          // Handle thinking content (some providers use this field)
+          if (chunk.choices?.[0]?.delta?.thinking) {
+            yield { reasoning: chunk.choices[0].delta.thinking };
           }
         }
       }
@@ -855,6 +888,7 @@ export class AnthropicProvider implements Provider {
         ? {
             promptTokens: data.usage.input_tokens,
             completionTokens: data.usage.output_tokens,
+            totalTokens: (data.usage.input_tokens || 0) + (data.usage.output_tokens || 0),
           }
         : undefined,
       finishReason: data.stop_reason || undefined,
@@ -982,6 +1016,7 @@ export class AnthropicProvider implements Provider {
         ? {
             promptTokens: res.usage.prompt_tokens,
             completionTokens: res.usage.completion_tokens,
+            totalTokens: (res.usage.prompt_tokens || 0) + (res.usage.completion_tokens || 0),
           }
         : undefined,
       finishReason: choice.finish_reason || undefined,
@@ -995,7 +1030,7 @@ export class AnthropicProvider implements Provider {
     };
   }
 
-  async *streamChat(messages: Message[], tools?: ToolDef[]): AsyncIterable<string> {
+  async *streamChat(messages: Message[], tools?: ToolDef[]): AsyncIterable<StreamChunk> {
     if (this.endpointMode === 'openai-compat') {
       const clean = sanitizeMessages(messages);
       const client = new OpenAI({
@@ -1009,8 +1044,12 @@ export class AnthropicProvider implements Provider {
         stream: true,
       });
       for await (const chunk of stream) {
-        const delta = chunk.choices[0]?.delta?.content || '';
-        if (delta) yield delta;
+        const delta = chunk.choices[0]?.delta as any;
+        const content = delta?.content || '';
+        if (content) yield { text: content };
+        // Handle reasoning content (o1/o3 models)
+        const reasoning = delta?.reasoning_content || delta?.thinking;
+        if (reasoning) yield { reasoning };
       }
       return;
     }
@@ -1127,14 +1166,14 @@ export class AnthropicProvider implements Provider {
       try {
         data = JSON.parse(trimmed);
       } catch {
-        yield trimmed;
+        yield { text: trimmed };
         return;
       }
       let text = '';
       for (const block of data.content || []) {
         if (block.type === 'text') text += block.text;
       }
-      yield text;
+      yield { text };
     }
   }
 }

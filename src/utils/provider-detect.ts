@@ -508,6 +508,43 @@ export async function autoDetectLocalModel(baseUrl: string): Promise<string> {
   return '';
 }
 
+// ─── Fetch all available models from endpoint ─────────────────────────────
+
+export interface DetectedModel {
+  id: string;
+  label: string;
+  desc?: string;
+}
+
+export async function fetchAvailableModels(baseUrl: string): Promise<DetectedModel[]> {
+  if (!baseUrl) return [];
+  try {
+    let url = baseUrl.replace(/\/+$/, '');
+    if (!url.endsWith('/v1')) {
+      url += '/v1';
+    }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(`${url}/models`, {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return [];
+    const json = (await res.json().catch(() => null)) as any;
+    const models = Array.isArray(json?.data) ? json.data : [];
+    return models
+      .map((m: any) => {
+        const id = m?.id;
+        if (typeof id !== 'string' || !id.trim()) return null;
+        return { id: id.trim(), label: id.trim() };
+      })
+      .filter(Boolean) as DetectedModel[];
+  } catch {
+    return [];
+  }
+}
+
 // ─── Model → provider heuristics ───────────────────────────────────────────
 
 export function detectProviderForModel(modelName: string): string | null {

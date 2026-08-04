@@ -301,6 +301,7 @@ function classifyError(e: any): ErrorType {
 export interface AgentEvent {
   type:
     | 'text'
+    | 'thinking'
     | 'tool_start'
     | 'tool_chunk'
     | 'tool_end'
@@ -1250,14 +1251,28 @@ export class AgentLoop {
             ? this.registry.getToolDefs(recoveryNames)
             : this.registry.getToolDefs();
         let fullText = '';
+        let fullReasoning = '';
         if (this.provider.streamChat) {
           try {
             for await (const chunk of this.provider.streamChat(messagesForModel, toolDefs)) {
-              fullText += chunk;
-              yield { type: 'text', data: chunk };
+              // Handle both string chunks and StreamChunk objects
+              if (typeof chunk === 'string') {
+                fullText += chunk;
+                yield { type: 'text', data: chunk };
+              } else {
+                if (chunk.text) {
+                  fullText += chunk.text;
+                  yield { type: 'text', data: chunk.text };
+                }
+                if (chunk.reasoning) {
+                  fullReasoning += chunk.reasoning;
+                  yield { type: 'thinking', data: chunk.reasoning };
+                }
+              }
             }
             response = {
               text: fullText,
+              reasoning: fullReasoning || undefined,
               toolCalls: [],
               usage: undefined,
             };

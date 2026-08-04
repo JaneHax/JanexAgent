@@ -12,7 +12,7 @@ export interface FlatChatMessage {
   checkpointId?: string;
 }
 
-export type VisualPartKind = 'text' | 'tool' | 'error' | 'route' | 'compact' | 'research';
+export type VisualPartKind = 'text' | 'thinking' | 'tool' | 'error' | 'route' | 'compact' | 'research';
 
 export interface ToolLifecyclePart {
   kind: 'tool';
@@ -37,14 +37,22 @@ export interface TextVisualPart {
   updatedAt: Date;
 }
 
+export interface ThinkingVisualPart {
+  kind: 'thinking';
+  content: string;
+  model?: string;
+  startedAt: Date;
+  updatedAt: Date;
+}
+
 export interface NonTextVisualPart {
-  kind: Exclude<VisualPartKind, 'text' | 'tool'>;
+  kind: Exclude<VisualPartKind, 'text' | 'thinking' | 'tool'>;
   content: string;
   toolName?: string;
   timestamp: Date;
 }
 
-export type VisualPart = TextVisualPart | ToolLifecyclePart | NonTextVisualPart;
+export type VisualPart = TextVisualPart | ThinkingVisualPart | ToolLifecyclePart | NonTextVisualPart;
 
 export interface CompletionMetadata {
   model?: string;
@@ -205,6 +213,16 @@ export function applyAgentEvent(
       }
       break;
     }
+    case 'thinking': {
+      const last = turn.parts[turn.parts.length - 1];
+      if (last?.kind === 'thinking') {
+        last.content += event.data;
+        last.updatedAt = now;
+      } else {
+        turn.parts.push({ kind: 'thinking', content: event.data, model: options.model, startedAt: now, updatedAt: now });
+      }
+      break;
+    }
     case 'tool_start': {
       upsertTool(turn, event, now);
       break;
@@ -263,6 +281,8 @@ export function flattenPresentationState(
   for (const part of turn.parts) {
     if (part.kind === 'text') {
       messages.push({ role: 'assistant', content: part.content, model: part.model || options.model, timestamp: part.startedAt });
+    } else if (part.kind === 'thinking') {
+      messages.push({ role: 'tool', content: `🧠 Thinking:\n${part.content}`, toolName: 'thinking', timestamp: part.startedAt });
     } else if (part.kind === 'tool') {
       const endEvent: AgentEvent = {
         type: 'tool_end',

@@ -19,6 +19,7 @@ import {
   ensureConfigDir,
   CONFIG_PATH,
 } from './Config.js';
+import { fetchAvailableModels } from '../utils/provider-detect.js';
 import { banner } from '../utils/ascii-logo.js';
 import { normalizeBaseUrl } from '../utils/base-url.js';
 
@@ -108,7 +109,7 @@ export async function runSetup(continueFrom?: boolean): Promise<janexConfig> {
 
     // Step 5: Model
     const model =
-      state.model || (await stepModel(provider, existingConfig.model, '5 / 11'));
+      state.model || (await stepModel(provider, existingConfig.model, '5 / 11', baseUrl));
     if (model === '__skip__' || model === '__back__') {
       saveSetupState({ step: 'model', provider, baseUrl, apiKey });
       return await loadConfigOrDefault();
@@ -399,7 +400,49 @@ async function stepModel(
   provider: string,
   existingModel?: string,
   step?: string,
+  baseUrl?: string,
 ): Promise<string> {
+  // For custom providers with a base URL, try to fetch available models
+  if ((provider === 'custom-auto' || provider === 'custom-openai' || provider === 'custom-anthropic') && baseUrl) {
+    drawInfo('Fetching available models from endpoint...');
+    const detectedModels = await fetchAvailableModels(baseUrl);
+    if (detectedModels.length > 0) {
+      const items = [
+        ...detectedModels.slice(0, 20).map(m => ({
+          id: m.id,
+          label: m.label,
+          desc: undefined as string | undefined,
+        })),
+        { id: 'custom', label: 'Custom model', desc: 'Type your own model ID' },
+      ];
+      const choice = await drawSelector({
+        title: 'Model',
+        items,
+        allowSkip: true,
+        step,
+        extra: existingModel
+          ? [`Current model: ${existingModel}`, 'Skip keeps the current model.']
+          : [`Found ${detectedModels.length} model(s) at this endpoint`],
+      });
+      if (choice === '__skip__' || choice === '__back__') {
+        return existingModel || detectedModels[0]?.id || 'gpt-4o';
+      }
+      if (choice === 'custom') {
+        const model = await drawInputScreen({
+          title: 'Custom Model',
+          hint: existingModel
+            ? `Enter the exact model ID your provider supports\nCurrent: ${existingModel}`
+            : 'Enter the exact model ID your provider supports',
+          label: 'Model ID:',
+          masked: false,
+          step,
+        });
+        return !model || model === '__back__' ? existingModel || detectedModels[0]?.id || 'gpt-4o' : model;
+      }
+      return choice;
+    }
+  }
+
   const models: Record<string, { id: string; label: string; desc?: string }[]> =
     {
       openai: [
@@ -410,11 +453,20 @@ async function stepModel(
         },
         { id: 'gpt-4o-mini', label: 'GPT-4o Mini', desc: 'Fast and cheap' },
         {
-          id: 'gpt-4-turbo',
-          label: 'GPT-4 Turbo',
-          desc: 'Most capable, slower',
+          id: 'gpt-4.1',
+          label: 'GPT-4.1',
+          desc: 'Latest flagship model',
         },
-        { id: 'o1-preview', label: 'o1 Preview', desc: 'Advanced reasoning' },
+        {
+          id: 'o3',
+          label: 'o3',
+          desc: 'Advanced reasoning',
+        },
+        {
+          id: 'o4-mini',
+          label: 'o4-mini',
+          desc: 'Fast reasoning',
+        },
         { id: 'custom', label: 'Custom model', desc: 'Type your own model ID' },
       ],
       anthropic: [

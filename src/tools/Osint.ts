@@ -1,5 +1,18 @@
 import type { Tool } from './Registry.js';
 
+function isValidDomain(domain: string): boolean {
+  return /^[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}$/.test(domain) && !domain.includes(';') && !domain.includes('&') && !domain.includes('|') && !domain.includes('$');
+}
+
+function isValidIp(ip: string): boolean {
+  return /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(ip);
+}
+
+function safeShellArg(arg: string): string {
+  if (/^[\w.-]+$/.test(arg)) return arg;
+  return `"${arg.replace(/"/g, '\\"')}"`;
+}
+
 const COUNTRY_CODES: Record<string, { country: string; flag: string; code2: string }> = {
   '1': { country: 'United States / Canada', flag: 'US/CA', code2: 'US' },
   '7': { country: 'Russia / Kazakhstan', flag: 'RU/KZ', code2: 'RU' },
@@ -371,34 +384,39 @@ async function lookupDomain(target: string): Promise<string[]> {
   const results: string[] = [];
   const { execSync } = await import('child_process');
 
+  if (!isValidDomain(target)) {
+    results.push(`Invalid domain format: ${target}`);
+    return results;
+  }
+
   results.push(`=== Domain Analysis: ${target} ===\n`);
 
   try {
-    const whois = execSync(`whois ${target} 2>/dev/null | head -40`, { encoding: 'utf8', timeout: 10000 });
+    const whois = execSync(`whois ${safeShellArg(target)} 2>/dev/null | head -40`, { encoding: 'utf8', timeout: 10000 });
     results.push(`WHOIS:\n${whois}`);
   } catch {
     results.push('WHOIS: not available');
   }
 
   try {
-    const dns = execSync(`dig ${target} +short 2>/dev/null`, { encoding: 'utf8', timeout: 10000 });
+    const dns = execSync(`dig ${safeShellArg(target)} +short 2>/dev/null`, { encoding: 'utf8', timeout: 10000 });
     results.push(`DNS Records:\n${dns}`);
   } catch {
     results.push('DNS: not available');
   }
 
   try {
-    const ns = execSync(`dig ${target} NS +short 2>/dev/null`, { encoding: 'utf8', timeout: 10000 });
+    const ns = execSync(`dig ${safeShellArg(target)} NS +short 2>/dev/null`, { encoding: 'utf8', timeout: 10000 });
     results.push(`Nameservers:\n${ns}`);
   } catch {}
 
   try {
-    const mx = execSync(`dig ${target} MX +short 2>/dev/null`, { encoding: 'utf8', timeout: 10000 });
+    const mx = execSync(`dig ${safeShellArg(target)} MX +short 2>/dev/null`, { encoding: 'utf8', timeout: 10000 });
     results.push(`Mail Servers:\n${mx}`);
   } catch {}
 
   try {
-    const txt = execSync(`dig ${target} TXT +short 2>/dev/null`, { encoding: 'utf8', timeout: 10000 });
+    const txt = execSync(`dig ${safeShellArg(target)} TXT +short 2>/dev/null`, { encoding: 'utf8', timeout: 10000 });
     if (txt.trim()) results.push(`TXT Records:\n${txt}`);
   } catch {}
 
@@ -414,6 +432,12 @@ async function lookupEmail(target: string): Promise<string[]> {
   }
 
   const [user, domain] = target.split('@');
+
+  if (!isValidDomain(domain)) {
+    results.push(`Invalid domain in email: ${domain}`);
+    return results;
+  }
+
   results.push(`=== Email Analysis: ${target} ===\n`);
   results.push(`User: ${user}`);
   results.push(`Domain: ${domain}`);
@@ -421,7 +445,7 @@ async function lookupEmail(target: string): Promise<string[]> {
 
   try {
     const { execSync } = await import('child_process');
-    const mx = execSync(`dig ${domain} MX +short 2>/dev/null`, { encoding: 'utf8', timeout: 10000 });
+    const mx = execSync(`dig ${safeShellArg(domain)} MX +short 2>/dev/null`, { encoding: 'utf8', timeout: 10000 });
     results.push(`\nMail Servers:\n${mx}`);
 
     if (mx.includes('google') || mx.includes('gmail')) {
@@ -441,7 +465,7 @@ async function lookupEmail(target: string): Promise<string[]> {
 
   try {
     const { execSync } = await import('child_process');
-    const spf = execSync(`dig ${domain} TXT +short 2>/dev/null | grep -i spf`, { encoding: 'utf8', timeout: 10000 });
+    const spf = execSync(`dig ${safeShellArg(domain)} TXT +short 2>/dev/null | grep -i spf`, { encoding: 'utf8', timeout: 10000 });
     if (spf.trim()) results.push(`SPF: ${spf.trim()}`);
   } catch {}
 
@@ -454,8 +478,13 @@ async function lookupIP(target: string): Promise<string[]> {
   const results: string[] = [];
   results.push(`=== IP Analysis: ${target} ===\n`);
 
+  if (!isValidIp(target)) {
+    results.push(`Invalid IP format: ${target}`);
+    return results;
+  }
+
   try {
-    const res = await fetch(`http://ip-api.com/json/${target}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query`);
+    const res = await fetch(`http://ip-api.com/json/${encodeURIComponent(target)}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query`);
     const data = await res.json() as any;
     if (data.status === 'success') {
       results.push(`Country: ${data.country} (${data.countryCode})`);
@@ -476,13 +505,13 @@ async function lookupIP(target: string): Promise<string[]> {
 
   try {
     const { execSync } = await import('child_process');
-    const reverse = execSync(`dig -x ${target} +short 2>/dev/null`, { encoding: 'utf8', timeout: 10000 });
+    const reverse = execSync(`dig -x ${safeShellArg(target)} +short 2>/dev/null`, { encoding: 'utf8', timeout: 10000 });
     if (reverse.trim()) results.push(`Reverse DNS: ${reverse.trim()}`);
   } catch {}
 
   try {
     const { execSync } = await import('child_process');
-    const nmap = execSync(`nmap -sV --top-ports 10 ${target} 2>/dev/null | head -20`, { encoding: 'utf8', timeout: 15000 });
+    const nmap = execSync(`nmap -sV --top-ports 10 ${safeShellArg(target)} 2>/dev/null | head -20`, { encoding: 'utf8', timeout: 15000 });
     if (nmap.trim()) results.push(`\nPort Scan (top 10):\n${nmap}`);
   } catch {}
 

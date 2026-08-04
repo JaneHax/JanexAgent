@@ -92,6 +92,13 @@ export class CommandHandler {
         return this.cmdGitHub(args);
       case 'gmail':
         return this.cmdGmail(args);
+      case 'bug-hunt':
+      case 'bug_hunt':
+      case 'ctf':
+        return this.cmdBugHunt(args);
+      case 'install-ctf-tools':
+      case 'install_ctf_tools':
+        return this.cmdInstallCTFTools();
       case 'exit':
       case 'quit':
         return this.cmdExit();
@@ -399,6 +406,85 @@ export class CommandHandler {
 
   private cmdExit(): boolean {
     this.ctx.addMessage({ role: 'system', content: 'Goodbye!' });
+    return true;
+  }
+
+  private async cmdBugHunt(args: string[]): Promise<boolean> {
+    if (args.length === 0) {
+      this.ctx.addMessage({ role: 'system', content: 'Usage: /bug-hunt [category] <target>\nCategories (optional): web, pwn, crypto, re, forensics, misc\nExamples:\n  /bug-hunt web https://example.com\n  /bug-hunt pwn ./binary.exe\n  /bug-hunt ./challenge.zip  (auto-detect)' });
+      return true;
+    }
+
+    let category: 'web' | 'pwn' | 'crypto' | 're' | 'forensics' | 'misc' | null = null;
+    let target: string;
+
+    const validCategories = ['web', 'pwn', 'crypto', 're', 'forensics', 'misc'];
+    const firstArg = args[0].toLowerCase();
+
+    if (validCategories.includes(firstArg) && args.length >= 2) {
+      category = firstArg as any;
+      target = args.slice(1).join(' ');
+    } else {
+      target = args.join(' ');
+    }
+
+    if (!category) {
+      category = this.detectCategory(target);
+    }
+
+    this.ctx.addMessage({ role: 'system', content: `Running bug hunt: category=${category}, target=${target}` });
+
+    try {
+      const { runBugHunt } = await import('../../commands/bug-hunt.js');
+      const result = await runBugHunt({ target, category, authorized: true });
+      this.ctx.addMessage({ role: 'system', content: result });
+    } catch (error: any) {
+      this.ctx.addMessage({ role: 'system', content: `Bug hunt failed: ${error.message}` });
+    }
+
+    return true;
+  }
+
+  private detectCategory(target: string): 'web' | 'pwn' | 'crypto' | 're' | 'forensics' | 'misc' {
+    const lower = target.toLowerCase();
+
+    if (lower.startsWith('http://') || lower.startsWith('https://') || /^[\w.-]+\.[a-z]{2,}/i.test(lower)) {
+      return 'web';
+    }
+
+    const binaryExts = ['.exe', '.dll', '.so', '.elf', '.bin', '.out', '.sys', '.drv', '.pyc', '.wasm', '.apk'];
+    if (binaryExts.some(ext => lower.endsWith(ext))) return 'pwn';
+
+    const cryptoExts = ['.pem', '.p12', '.pfx', '.key', '.enc', '.crypt', '.encrypted'];
+    if (cryptoExts.some(ext => lower.endsWith(ext))) return 'crypto';
+
+    const forensicsExts = ['.pcap', '.pcapng', '.cap', '.memorydump', '.memdump', '.img', '.dd', '.e01', '.raw'];
+    if (forensicsExts.some(ext => lower.endsWith(ext))) return 'forensics';
+
+    const reExts = ['.pyc', '.pyo', '.class', '.jar', '.wasm', '.zip', '.rar', '.7z', '.tar', '.gz', '.xz'];
+    if (reExts.some(ext => lower.endsWith(ext))) return 're';
+
+    const miscExts = ['.txt', '.md', '.json', '.xml', '.csv', '.log'];
+    if (miscExts.some(ext => lower.endsWith(ext))) return 'misc';
+
+    if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(target) || /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(target)) {
+      return 'web';
+    }
+
+    return 'misc';
+  }
+
+  private async cmdInstallCTFTools(): Promise<boolean> {
+    this.ctx.addMessage({ role: 'system', content: 'Checking CTF tools installation...' });
+
+    try {
+      const { installCTFTools } = await import('../../commands/bug-hunt.js');
+      const result = await installCTFTools();
+      this.ctx.addMessage({ role: 'system', content: result });
+    } catch (error: any) {
+      this.ctx.addMessage({ role: 'system', content: `CTF tools check failed: ${error.message}` });
+    }
+
     return true;
   }
 }

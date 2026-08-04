@@ -4,17 +4,18 @@ import { readClipboard, writeClipboard } from './Clipboard.js';
 import { safeDisplayText } from '../utils/terminal-sanitize.js';
 import { miniLogo } from '../utils/ascii-logo.js';
 
-const teal = chalk.hex('#fab283');
-const orange = chalk.hex('#9d7cd8');
-const dim = chalk.hex('#808080');
-const light = chalk.hex('#5c9cf5');
-const green = chalk.hex('#7fd88f');
-const bright = chalk.hex('#eeeeee');
-const border = chalk.hex('#484848');
-const bg = chalk.bgHex('#1e1e1e');
+// Hermes-inspired theme with cyan/blue accent (distinct from Hermes green/purple)
+const teal = chalk.hex('#56b6c2');      // Cyan accent
+const orange = chalk.hex('#c678dd');    // Purple accent (like Hermes but different shade)
+const dim = chalk.hex('#636d83');       // Muted gray-blue
+const light = chalk.hex('#61afef');     // Blue highlight
+const green = chalk.hex('#98c379');     // Soft green
+const bright = chalk.hex('#abb2bf');    // Light gray
+const border = chalk.hex('#3e4451');    // Dark border
+const bg = chalk.bgHex('#282c34');      // Dark background
 
-const panelBg = chalk.bgHex('#141414');
-const janexAccent = chalk.hex('#56b6c2');
+const panelBg = chalk.bgHex('#21252b'); // Slightly darker panel
+const janexAccent = chalk.hex('#56b6c2'); // Cyan accent for branding
 let setupScreenActive = false;
 
 export function enterSetupScreen(): void {
