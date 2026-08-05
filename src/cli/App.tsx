@@ -61,6 +61,7 @@ import {
   getTodoStats,
 } from '../utils/TodoManager.js';
 import { ErrorBoundary } from './ErrorBoundary.js';
+import { runBugHunt } from '../commands/bug-hunt.js';
 
 const VALID_DEPTHS = ['low', 'medium', 'high', 'xhigh', 'max', 'ultra'] as const;
 type ResearchDepth = (typeof VALID_DEPTHS)[number];
@@ -74,6 +75,8 @@ const HANDLED_COMMANDS = new Set([
   'btw',
   'bundles',
   'busy',
+  'install-ctf-tools',
+  'bug-hunt',
   'clear',
   'codex-runtime',
   'compact',
@@ -2682,6 +2685,69 @@ function App({ config, registry, resumeId, cronDaemon }: AppProps) {
             addAssistant(`Todos: ${stats.done}/${stats.total} complete\n\n${list}`);
           } else {
             addAssistant('Usage: /todo add <task> | /todo done <n> | /todo list | /todo clear');
+          }
+          return;
+        }
+        if (commandName === 'bug-hunt') {
+          const rawArgs = (slash.args || '').trim();
+          const args = rawArgs ? rawArgs.split(/\s+/) : [];
+          const validCategories = ['web', 'pwn', 'crypto', 're', 'forensics', 'misc'];
+          const firstArg = args[0]?.toLowerCase();
+          let category: string | null = null;
+          let target = '';
+
+          if (validCategories.includes(firstArg || '') && args.length >= 2) {
+            category = firstArg;
+            target = args.slice(1).join(' ');
+          } else {
+            target = args.join(' ');
+          }
+
+          if (!target) {
+            addAssistant('Usage: /bug-hunt [category] <target>\nCategories: web, pwn, crypto, re, forensics, misc\nExamples:\n  /bug-hunt web https://example.com\n  /bug-hunt pwn ./binary.exe\n  /bug-hunt ./challenge.zip  (auto-detect)');
+            return;
+          }
+
+          if (!category) {
+            const lower = target.toLowerCase();
+            if (lower.startsWith('http://') || lower.startsWith('https://') || /^[\w.-]+\.[a-z]{2,}/i.test(lower)) {
+              category = 'web';
+            } else {
+              const binaryExts = ['.exe', '.dll', '.so', '.elf', '.bin', '.out', '.sys', '.drv', '.pyc', '.wasm', '.apk'];
+              if (binaryExts.some(ext => lower.endsWith(ext))) category = 'pwn';
+              else {
+                const cryptoExts = ['.pem', '.p12', '.pfx', '.key', '.enc', '.crypt', '.encrypted'];
+                if (cryptoExts.some(ext => lower.endsWith(ext))) category = 'crypto';
+                else {
+                  const forensicsExts = ['.pcap', '.pcapng', '.cap', '.memorydump', '.memdump', '.img', '.dd', '.e01', '.raw'];
+                  if (forensicsExts.some(ext => lower.endsWith(ext))) category = 'forensics';
+                  else {
+                    const reExts = ['.pyc', '.pyo', '.class', '.jar', '.wasm', '.zip', '.rar', '.7z', '.tar', '.gz', '.xz'];
+                    if (reExts.some(ext => lower.endsWith(ext))) category = 're';
+                    else category = 'misc';
+                  }
+                }
+              }
+            }
+          }
+
+          addAssistant(`Running bug hunt: category=${category}, target=${target}`);
+          try {
+            const result = await runBugHunt({ target, category: category as any, authorized: true });
+            addAssistant(result);
+          } catch (error: any) {
+            addAssistant(`Bug hunt failed: ${error.message}`);
+          }
+          return;
+        }
+
+        if (commandName === 'install-ctf-tools') {
+          try {
+            const { installCTFTools } = await import('../commands/bug-hunt.js');
+            const result = await installCTFTools();
+            addAssistant(result);
+          } catch (error: any) {
+            addAssistant(`CTF tools check failed: ${error.message}`);
           }
           return;
         }
