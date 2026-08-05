@@ -1,6 +1,6 @@
 {
   "name": "janex-agent",
-  "version": "1.0.37",
+  "version": "1.0.38",
   "type": "module",
   "description": "Autonomous Multi-Agent AI Workspace in your terminal. Codes, researches, and executes real tasks with 40+ tools and 280+ skills",
   "main": "dist/index.js",

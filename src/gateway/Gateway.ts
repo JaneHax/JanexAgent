@@ -258,6 +258,8 @@ const KNOWN_COMMANDS = new Set([
   'login',
   'goal',
   'rules',
+  'bug-hunt',
+  'install-ctf-tools',
 ]);
 
 function cleanResponse(text: string): string {
@@ -2024,6 +2026,75 @@ export class Gateway extends EventEmitter {
           msg.channelId,
           msg.replyTo
         );
+        return;
+      }
+
+      if (cmd === 'bug-hunt') {
+        const rawArgs = (args || '').trim();
+        const parts = rawArgs ? rawArgs.split(/\s+/) : [];
+        const validCategories = ['web', 'pwn', 'crypto', 're', 'forensics', 'misc'];
+        const firstArg = parts[0]?.toLowerCase();
+        let category: string | null = null;
+        let target = '';
+
+        if (validCategories.includes(firstArg || '') && parts.length >= 2) {
+          category = firstArg;
+          target = parts.slice(1).join(' ');
+        } else {
+          target = parts.join(' ');
+        }
+
+        if (!target) {
+          await platform.send(
+            'Usage: /bug-hunt [category] <target>\nCategories: web, pwn, crypto, re, forensics, misc\nExamples:\n  /bug-hunt web https://example.com\n  /bug-hunt pwn ./binary.exe\n  /bug-hunt ./challenge.zip  (auto-detect)',
+            msg.channelId,
+            msg.replyTo
+          );
+          return;
+        }
+
+        if (!category) {
+          const lower = target.toLowerCase();
+          if (lower.startsWith('http://') || lower.startsWith('https://') || /^[\w.-]+\.[a-z]{2,}/i.test(lower)) {
+            category = 'web';
+          } else {
+            const binaryExts = ['.exe', '.dll', '.so', '.elf', '.bin', '.out', '.sys', '.drv', '.pyc', '.wasm', '.apk'];
+            if (binaryExts.some(ext => lower.endsWith(ext))) category = 'pwn';
+            else {
+              const cryptoExts = ['.pem', '.p12', '.pfx', '.key', '.enc', '.crypt', '.encrypted'];
+              if (cryptoExts.some(ext => lower.endsWith(ext))) category = 'crypto';
+              else {
+                const forensicsExts = ['.pcap', '.pcapng', '.cap', '.memorydump', '.memdump', '.img', '.dd', '.e01', '.raw'];
+                if (forensicsExts.some(ext => lower.endsWith(ext))) category = 'forensics';
+                else {
+                  const reExts = ['.pyc', '.pyo', '.class', '.jar', '.wasm', '.zip', '.rar', '.7z', '.tar', '.gz', '.xz'];
+                  if (reExts.some(ext => lower.endsWith(ext))) category = 're';
+                  else category = 'misc';
+                }
+              }
+            }
+          }
+        }
+
+        await platform.send(`Running bug hunt: category=${category}, target=${target}`, msg.channelId, msg.replyTo);
+        try {
+          const { runBugHunt } = await import('../../commands/bug-hunt.js');
+          const result = await runBugHunt({ target, category: category as any, authorized: true });
+          await platform.send(result, msg.channelId, msg.replyTo);
+        } catch (error: any) {
+          await platform.send(`Bug hunt failed: ${error.message}`, msg.channelId, msg.replyTo);
+        }
+        return;
+      }
+
+      if (cmd === 'install-ctf-tools') {
+        try {
+          const { installCTFTools } = await import('../../commands/bug-hunt.js');
+          const result = await installCTFTools();
+          await platform.send(result, msg.channelId, msg.replyTo);
+        } catch (error: any) {
+          await platform.send(`CTF tools check failed: ${error.message}`, msg.channelId, msg.replyTo);
+        }
         return;
       }
 
