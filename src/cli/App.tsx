@@ -61,7 +61,7 @@ import {
   getTodoStats,
 } from '../utils/TodoManager.js';
 import { ErrorBoundary } from './ErrorBoundary.js';
-import { runBugHunt } from '../commands/bug-hunt.js';
+import { runBugHunt } from '../../commands/bug-hunt.js';
 
 const VALID_DEPTHS = ['low', 'medium', 'high', 'xhigh', 'max', 'ultra'] as const;
 type ResearchDepth = (typeof VALID_DEPTHS)[number];
@@ -2743,7 +2743,7 @@ function App({ config, registry, resumeId, cronDaemon }: AppProps) {
 
         if (commandName === 'install-ctf-tools') {
           try {
-            const { installCTFTools } = await import('../commands/bug-hunt.js');
+            const { installCTFTools } = await import('../../commands/bug-hunt.js');
             const result = await installCTFTools();
             addAssistant(result);
           } catch (error: any) {
