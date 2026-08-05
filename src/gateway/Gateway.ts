@@ -2087,6 +2087,7 @@ export class Gateway extends EventEmitter {
       const currentRunId = `run_${Date.now()}_${cryptoRandomId()}`;
       this.activeRuns.set(agentKey, currentRunId);
       this.cancelledRuns.delete(currentRunId);
+      let typingInterval: ReturnType<typeof setInterval> | undefined;
 
       try {
         let fullResponse = '';
@@ -2094,7 +2095,6 @@ export class Gateway extends EventEmitter {
         let progressMessageId: string | undefined;
         let progressCanEdit = false;
         let sawToolStatus = false;
-        let typingInterval: ReturnType<typeof setInterval> | undefined;
 
         await platform.react?.(msg.channelId, msg.replyTo || '', '👀');
         await platform.typing?.(msg.channelId);
